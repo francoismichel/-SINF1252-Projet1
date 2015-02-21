@@ -25,7 +25,7 @@ struct game *new_game(int xsize, int ysize){
 	}
 	jeu -> cur_player = PLAYER_WHITE;
 	int j;
-	//POUR L'INSTANT ES PIONS SONT PAS MIS UNE CASE SUR DEUX, A CORRIGER, LA J'AI PAS LE TEMPS DUCON
+	//POUR L'INSTANT LES PIONS SONT PAS MIS UNE CASE SUR DEUX, A CORRIGER, LA J'AI PAS LE TEMPS DUCON
 	for(i = 0 ; i < xsize ; i++){ //On initialise le plateau (les pions noirs en haut, les blancs en bas.)
 		for(j = 0 ; j < ysize ; j++){
 			if(j < 4){
