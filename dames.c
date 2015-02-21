@@ -25,14 +25,15 @@ struct game *new_game(int xsize, int ysize){
 	}
 	jeu -> cur_player = PLAYER_WHITE;
 	int j;
-	for(i = 0 ; i < xsize ; i++){
+	//POUR L'INSTANT ES PIONS SONT PAS MIS UNE CASE SUR DEUX, A CORRIGER, LA J'AI PAS LE TEMPS DUCON
+	for(i = 0 ; i < xsize ; i++){ //On initialise le plateau (les pions noirs en haut, les blancs en bas.)
 		for(j = 0 ; j < ysize ; j++){
 			if(j < 4){
-				*(*((jeu -> board) + i) + j) = 0x1;
+				*(*((jeu -> board) + i) + j) = 0x1;	//001 en binaire (pion noir)
 			} else if (j < 6){
-				*(*((jeu -> board) + i) + j) = 0x0;
+				*(*((jeu -> board) + i) + j) = 0x0;	//000 en binaire (pas de pion)
 			} else {
-				*(*((jeu -> board) + i) + j) = 0x5;
+				*(*((jeu -> board) + i) + j) = 0x5;	//101 en binaire (pion blanc)
 			}
 		}	
 	}
