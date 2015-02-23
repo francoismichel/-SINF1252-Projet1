@@ -44,3 +44,28 @@ struct game *new_game(int xsize, int ysize){
 	}
 	return jeu;
 }
+
+struct game *load_game(int xsize, int ysize, int **board, int cur_player){
+	struct game *jeu = (struct game *) malloc(sizeof(struct game));  
+	jeu -> xsize = xsize;  //on initialise toutes les variables de la structure.
+	jeu -> ysize = ysize;
+	jeu -> board = board; //Pas besoin de creer un tableau, on nous donne un pointeur qui pointe deja vers les bonnes valeurs.
+	jeu -> cur_player = cur_player; 
+	jeu -> moves = (struct move *) malloc(sizeof(struct move));   // peut-etre faire un calloc plutot que malloc, par souci de proprete ?
+	return jeu;															  // vu qu'on initialise aucune variable de moves dans cette fonction...
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
