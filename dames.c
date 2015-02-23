@@ -45,6 +45,8 @@ struct game *new_game(int xsize, int ysize){
 	return jeu;
 }
 
+
+//Fonction non testee pour le moment
 struct game *load_game(int xsize, int ysize, int **board, int cur_player){
 	struct game *jeu = (struct game *) malloc(sizeof(struct game));  
 	jeu -> xsize = xsize;  //on initialise toutes les variables de la structure.
