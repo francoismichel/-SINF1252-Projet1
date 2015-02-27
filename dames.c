@@ -32,9 +32,9 @@ struct game *new_game(int xsize, int ysize){
 				*(*((jeu -> board) + i) + j) = 0x0;
 			}
 			else{
-				if(j < 4){
+				if(i < 4){
 					*(*((jeu -> board) + i) + j) = 0x1;
-				} else if (j < 6){
+				} else if (i < 6){
 					*(*((jeu -> board) + i) + j) = 0x0;
 				} else {
 					*(*((jeu -> board) + i) + j) = 0x5;
@@ -45,18 +45,56 @@ struct game *new_game(int xsize, int ysize){
 	return jeu;
 }
 
-
-//Fonction non testee pour le moment
-struct game *load_game(int xsize, int ysize, int **board, int cur_player){
+struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
 	struct game *jeu = (struct game *) malloc(sizeof(struct game));  
-	jeu -> xsize = xsize;  //on initialise toutes les variables de la structure.
+	jeu -> xsize = xsize;  	//on initialise toutes les variables de la structure.
 	jeu -> ysize = ysize;
-	jeu -> board = board; //Pas besoin de creer un tableau, on nous donne un pointeur qui pointe deja vers les bonnes valeurs.
+	jeu -> board = (int **) board; 	//Pas besoin de creer un tableau, on nous donne un pointeur qui pointe deja vers les bonnes valeurs.
 	jeu -> cur_player = cur_player; 
 	jeu -> moves = (struct move *) malloc(sizeof(struct move));   // peut-etre faire un calloc plutot que malloc, par souci de proprete ?
 	return jeu;															  // vu qu'on initialise aucune variable de moves dans cette fonction...
 }
 
+
+
+/*
+ * is_move_seq_valid
+ * Vérifier si une séquence d'un mouvement est valide. La fonction ne MODIFIE PAS l'état du jeu !
+ * 
+ * @game: pointeur vers la structure du jeu
+ * @seq: séquence du mouvement à vérifier
+ * @prev: séquence précédent immédiatement la séquence à vérifier, NULL s'il @seq est la première séquence du mouvement
+ * @taken: pointeur vers des coordonnées qui seront définies aux coordonnées de la pièce prise s'il en existe une
+ * @return: 0 si mouvement invalide, 1 si déplacement uniquement, 2 si capture
+ */
+int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const struct move_seq *prev, struct coord *taken){
+	return 0;
+}
+
+/*
+ * print_board
+ * Affiche l'état du jeu sur le terminal
+ *
+ * @game: pointeur vers la structure du jeu
+ */
+void print_board(const struct game *game){
+	int i,j;	
+	for(i = 0 ; i < 10 ; i++){
+		for(j = 0 ; j < 10 ; j++){
+			printf("%d ", (game -> board)[i][j]);
+		}
+		printf("\n");
+	}
+	if(game -> cur_player == PLAYER_BLACK){
+		printf("C'est au joueur noir de jouer.\n");
+	}
+	else if(game -> cur_player == PLAYER_WHITE){
+		printf("C'est au joueur blanc de jouer.\n");
+	}
+	else{
+		printf("Erreur : impossible de déterminer le joueur qui doit jouer...\n");
+	}
+}
 
 
 
