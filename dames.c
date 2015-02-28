@@ -97,13 +97,10 @@ void print_board(const struct game *game){
 }
 
 
-void free_move_seq(move_seq * seq){
-	move_seq *precedent = seq
+void free_move_seq(struct move_seq * seq){
+	struct move_seq *precedent = seq;
 	while(seq != NULL){
 		seq = seq -> next;
-		free(precedent -> c_old);
-		free(precedent -> c_new);
-		free(precedent -> piece_taken);
 		free(precedent);
 		precedent = seq;
 	}	
@@ -116,20 +113,21 @@ void free_move_seq(move_seq * seq){
 * @game: pointeur vers la structure du jeu
 */
 
-//pas verifie... pas fini
+//Fonctionne, normalement. Verifié avec Valgrind
 void free_game(struct game *game){
 	int i;
-	int j;
 	for(i = 0 ; i < 10 ; i++){
 		free(*((game -> board) + i));
 	}
 	struct move *precedent = game -> moves;
 	while(game -> moves != NULL){
 		game -> moves = (game -> moves) -> next;
-		free_move_seq(precedent -> seq):
+		free_move_seq(precedent -> seq);
 		free(precedent);
-		precedent = games -> moves;
+		precedent = game -> moves;
 	}
+	free(game -> board);
+	free(game);
 }
 
 
