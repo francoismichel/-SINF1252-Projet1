@@ -5,6 +5,7 @@
 #define NORDEST 2
 #define SUDOUEST 3
 #define SUDEST 4
+int nPieces[2];
 struct game *new_game(int xsize, int ysize){
 	struct game *jeu = (struct game *) malloc(sizeof(struct game));//On alloue de la memoire pour creer la structure du jeu
 	if(jeu == NULL){  //Si le malloc a echoue
@@ -45,6 +46,8 @@ struct game *new_game(int xsize, int ysize){
 			}
 		}	
 	}
+	nPieces[PLAYER_WHITE] = 20;
+	nPieces[PLAYER_BLACK] = 20;
 	return jeu;
 }
 
@@ -261,6 +264,113 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
 		return 0;
 	}
 	return isMoveValid(game, c_avant, c_apres, pieceQuiJoue, taken);
+}
+
+//ajoute une sequence dans le move en tete de pile du jeu
+void push_seq(struct game *jeu, const struct move_seq *seq, struct coord piece_taken, int piece_value, int old_orig){
+	struct move_seq *current = (jeu -> moves) -> seq;
+	struct move_seq *newSeq;
+	newSeq = (struct move_seq*) malloc(sizeof(struct move_seq));
+	newSeq -> next = (jeu -> moves) -> seq;
+	newSeq -> c_old = current -> c_old;
+	newSeq -> c_new = current -> c_new;
+	newSeq -> piece_value = piece_value;
+	newSeq -> old_orig = old_orig;
+	newSeq -> piece_taken = piece_taken;
+	(jeu -> moves) -> seq = newSeq;
+}
+
+/*
+ * transforme un pion en dame si necessaire
+ * retourne 1 si le pion a ete transforme en dame, retourne 0 sinon
+ */
+int transformDame(struct game *jeu, struct coord c){
+	int piece = (jeu -> board)[c.x][c.y];
+	if(!isDame(piece)){
+		if(getColor(piece) == PLAYER_WHITE && c.y == 0){
+			(jeu -> board)[c.x][c.y] = (jeu -> board)[c.x][c.y] | 0x2;
+			return 1;
+		}
+		else if(getColor(piece) == PLAYER_BLACK && c.y == 9){
+			(jeu -> board)[c.x][c.y] = (jeu -> board)[c.x][c.y] | 0x2;
+			return 1;
+		}
+		else{
+			return 0;
+		}
+	}
+	return 0;
+} 
+
+//ajoute un move vide en tete de pile du jeu
+void push_move(struct game *jeu){
+	struct move *newMove = (struct move *) malloc(sizeof(struct move));
+	newMove -> next = jeu -> moves;
+	newMove -> seq = NULL;
+	jeu -> moves = newMove;
+}
+
+
+/*
+ * apply_moves
+ * Effectuer des mouvements
+ *
+ * @game: pointeur vers la structure du jeu
+ * @moves: liste chainée de mouvements à effectuer
+ * @return: -1 si erreur (e.g. mouvement invalide), 0 si mouvements valides, 1 si jeu terminé (game->cur_player est le gagnant)
+ */
+int apply_moves(struct game *game, const struct move *moves){
+	struct move *current = (struct move *) moves;
+	struct move_seq *sequence;
+	struct coord *taken = NULL;
+	struct move_seq *previousSeq = NULL;
+	struct coord c_avant;
+	struct coord c_apres;
+	int ennemy;						//Variable qui retient la couleur du pion qui se fait manger, s'il y en a un
+	int previousValid = 3;			//Variable qui retient la valeur retournee par l'appel de is_move_seq_valid sur la sequence precedente
+	int isValid = 3;				//Variable qui retient la valeur qui sera retournee par l'appel de is_move_seq_valid sur la sequence en cours
+	int playerPiece;				//Valeur de le piece jouee lors de la sequence en cours
+	int gotDame= 0;					//Determine si le joueur a recupere une dame lors de la sequence precedente; 1: oui, 0: non
+	while(current != NULL){			//On parcourt la liste de moves
+		push_move(game);
+		sequence = current -> seq;
+		while(current != NULL){	//On parcourt la liste de sequences du move
+			if(previousValid == 1 || gotDame == 1){
+				return -1;
+			}
+			isValid = is_move_seq_valid(game, sequence, previousSeq, taken);
+			if(isValid == 0){		//Si la sequence n'est pas valide, le move n'est pas valide
+				return -1;
+			}
+			else if(isValid == 1){
+				c_avant = sequence -> c_old;
+				c_apres = sequence -> c_new;
+				playerPiece = (game -> board)[c_avant.x][c_avant.y];
+				ennemy = 0x0;
+				(game -> board)[c_apres.x][c_apres.y] = (game -> board)[c_avant.x][c_avant.y];
+				(game -> board)[c_avant.x][c_avant.y] = 0x0;
+			}else{
+				c_avant = sequence -> c_old;
+				c_apres = sequence -> c_new;
+				playerPiece = (game -> board)[c_avant.x][c_avant.y];
+				(game -> board)[c_apres.x][c_apres.y] = (game -> board)[c_avant.x][c_avant.y];
+				(game -> board)[c_avant.x][c_avant.y] = 0x0;
+				ennemy = (game -> board)[taken -> x][taken -> y];
+				(game -> board)[taken -> x][taken -> y] = 0x0;
+				nPieces[getColor(ennemy)]--;
+				if(nPieces[getColor(ennemy)] == 0){
+					return 1;
+				}
+			}
+			push_seq(game, sequence, *taken, playerPiece, ennemy);
+			previousSeq = sequence;
+			gotDame = transformDame(game, c_apres);		//on recupere une dame si necessaire et on recupere le resultat
+			sequence = sequence -> next;
+		}
+		//creer une fonction pour voir si le joueur peut encore jouer apres ou non
+		current = current -> next;
+		previousValid = 3;		//Comme on change de move, ce n'est plus le meme joueur qui joue, donc on reinitiaise previousValid.
+	}
 }
 
 /*
