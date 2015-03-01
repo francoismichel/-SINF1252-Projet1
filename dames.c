@@ -1,7 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "dames.h"
-
+#define NORDOUEST 1
+#define NORDEST 2
+#define SUDOUEST 3
+#define SUDEST 4
 struct game *new_game(int xsize, int ysize){
 	struct game *jeu = (struct game *) malloc(sizeof(struct game));//On alloue de la memoire pour creer la structure du jeu
 	if(jeu == NULL){  //Si le malloc a echoue
@@ -55,7 +58,184 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
 	return jeu;															  // vu qu'on initialise aucune variable de moves dans cette fonction...
 }
 
+int getColor(int piece){
+	return (piece & 0x4) >> 2; 
+}
 
+int isNotOutOfBoard(const struct move_seq *seq){
+	struct coord c_avant = seq -> c_old;
+	struct coord c_apres = seq -> c_new;
+	return c_avant.x >= 0 && c_avant.x < 10 && c_avant.y >= 0 && c_avant.y < 10
+		&& c_apres.x >= 0 && c_apres.x < 10 && c_apres.y >= 0 && c_apres.y < 10;
+}
+/*
+ * retourne 0 si la piece n'est pas une dame, !0 si c'en est une
+ * @piece est une piece valide
+ */
+int isDame(int piece){
+ 	return (piece & 0x2) == 0x2;
+}
+
+
+int getDiagonal(struct coord c_avant, struct coord c_apres){
+	if(c_apres.x - c_avant.x > 0 || c_apres.y - c_avant.y > 0){
+		return SUDEST;
+	}
+	else if(c_apres.x - c_avant.x > 0 || c_apres.y - c_avant.y < 0){
+		return NORDEST;
+	}
+	else if(c_apres.x - c_avant.x < 0 || c_apres.y - c_avant.y > 0){
+		return SUDOUEST;
+	}	
+	else if(c_apres.x - c_avant.x < 0 || c_apres.y - c_avant.y < 0){
+		return NORDOUEST;
+	}
+	else{
+		return 0;
+	}
+}
+
+
+/*
+ * retourne 0 si la prise de la piece n'est pas valide, retourne !0 si elle l'est
+ * On considere que la prise est valide si :
+ * - la piece qui prend et la piece prise sont de couleurs opposees
+ * - la piece qui prend a sauté au-dessus de la piece prise :
+ * 		cela signifie que les coordonnees de la piece prise sont les moyennes des coordonnees de la piece qui joue,
+ *		avant et apres avoir joué, si la piece qui joue est un pion.
+ * @piece est une piece valide
+ */
+int pieceBienPrise(const struct game *jeu, struct coord *prise, struct coord c_avant, struct coord c_apres){
+	int piecePrise = (jeu -> board)[prise -> x][prise -> y];
+	int pieceQuiJoue = (jeu -> board)[c_avant.x][c_avant.y];
+	if(getColor(piecePrise) ^ getColor(pieceQuiJoue) == 0x1){	//On verifie que la piece qui joue et la piece prise sont de couleurs differentes
+		//On verifie que la piece qui joue a bien saute au-dessus de la piece prise :
+		return ( (c_avant.x + c_apres.x)/2 == prise -> x ) && ( (c_avant.y + c_apres.y)/2 == prise -> y ); 
+	}
+	else{		//Sinon, la prise de piece n'est pas valide
+		return 0;
+	}
+}
+
+
+//retourne 0 si ce n'est pas un mouvement diagonal. Si oui, retourne la distance diagonae parcourue
+int isDiagonal(struct coord c_avant, struct coord c_apres){
+	int valAbs = abs(c_apres.x - c_avant.x);
+	if(valAbs == abs(c_apres.y - c_avant.y)){
+		return valAbs;
+	}
+	else{
+		return 0;
+	}
+}
+
+int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken){
+	int valeurMove = isDiagonal(c_avant, c_apres);
+	if(valeurMove == 0 || valeurMove > 2){
+		return 0;
+	}
+	//Donc ici, on sait que ValeurMove vaut 1 ou 2 (prise de pion ou non)
+	
+	if(valeurMove == 2){
+		int piecePrise;
+		int diagonale = getDiagonal(c_avant, c_apres);
+		if(diagonale == SUDEST){
+			piecePrise = (jeu -> board)[c_avant.x + 1][c_avant.y + 1];
+			if(piecePrise = 0x0){
+				return 0;
+			}
+			taken -> x = c_avant.x + 1;
+			taken -> y = c_avant.x + 1;
+		}
+		else if(diagonale == SUDOUEST){
+			piecePrise = (jeu -> board)[c_avant.x - 1][c_avant.y + 1];
+			if(piecePrise = 0x0){
+				return 0;
+			}
+			taken -> x = c_avant.x - 1;
+			taken -> y = c_avant.x + 1;
+		}
+		else if(diagonale == NORDEST){
+			piecePrise = (jeu -> board)[c_avant.x + 1][c_avant.y - 1];
+			if(piecePrise = 0x0){
+				return 0;
+			}
+			taken -> x = c_avant.x + 1;
+			taken -> y = c_avant.x - 1;
+		}
+		else{
+			piecePrise = (jeu -> board)[c_avant.x - 1][c_avant.y - 1];
+			if(piecePrise = 0x0){
+				return 0;
+			}
+			taken -> x = c_avant.x - 1;
+			taken -> y = c_avant.x - 1;
+		}
+		return 2;
+	}
+	int piece = (jeu -> board)[c_avant.x][c_avant.y];
+	if(getColor(piece) == PLAYER_WHITE){	//Si la piece est un pion blanc, on regarde si son mouvement est correct (mouvement en diagonale)
+	return (c_apres.x - c_avant.x == -valeurMove && c_apres.y - c_avant.y == -valeurMove) ||
+		   (c_apres.x - c_avant.x == valeurMove && c_apres.y - c_avant.y == -valeurMove);
+	}		
+	else{//Si c'est un pion noir, meme chose, sauf que le sens de deplacement a changé
+		return (c_apres.x - c_avant.x == -valeurMove && c_apres.y - c_avant.y == valeurMove) ||
+			   (c_apres.x - c_avant.x == valeurMove && c_apres.y - c_avant.y == valeurMove);
+	}
+	
+		
+}
+
+int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken){
+	int valeurMove = isDiagonal(c_avant, c_apres);
+	if(valeurMove == 0){
+		return 0;
+	}
+	int diagonale = getDiagonal(c_avant, c_apres);
+	int prise = 0;
+	int i;
+	int position;
+	for(i = 1 ; i <= valeurMove ; i++){
+		if(diagonale == SUDEST){
+			position = (jeu -> board)[c_avant.x + i][c_avant.y + i];
+		}
+		else if(diagonale == SUDOUEST){
+			position = (jeu -> board)[c_avant.x - i][c_avant.y + i];
+		}
+		else if(diagonale == NORDEST){
+			position = (jeu -> board)[c_avant.x + i][c_avant.y - i];
+		}
+		else{
+			position = (jeu -> board)[c_avant.x - i][c_avant.y - i];
+		}
+		if(position != 0x0 && getColor(position) == getColor((jeu -> board)[c_avant.x][c_avant.y])){
+			return 0;
+		}
+		else if(position != 0x0){
+			if(prise = 0){
+				prise = 1;
+			}
+			else{
+				return 0;
+			}
+		}
+	}
+	
+}
+
+
+
+int isMoveValid(const struct game *jeu, struct coord c_avant, struct coord c_apres, int piece, struct coord *taken){
+	if((jeu -> board)[c_apres.x][c_apres.y] != 0){	//On verifie si la piece atterit sur une case vide
+		return 0;
+	}
+	if(!isDame(piece)){		//Si la piece est un pion
+		return isCorrectMovePion(jeu, c_avant, c_apres, taken);
+	}
+	else{
+		return isCorrectMoveDame(jeu, c_avant, c_apres, taken);
+	}
+}
 
 /*
  * is_move_seq_valid
@@ -68,7 +248,19 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
  * @return: 0 si mouvement invalide, 1 si déplacement uniquement, 2 si capture
  */
 int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const struct move_seq *prev, struct coord *taken){
-	return 0;
+	if( (prev -> c_new).x != (seq -> c_old).x || (prev -> c_new).y != (seq -> c_old).y ){
+		return 0;
+	}
+	struct coord c_avant = seq -> c_old;
+	struct coord c_apres = seq -> c_new;
+	int pieceQuiJoue = (game -> board)[c_avant.x][c_avant.y];	//on recupere la valeur de la piece qui joue.
+	if(getColor(pieceQuiJoue) != game -> cur_player){	//on recupere le 3eme bit de la piece qui joue et on le compare au joueur qui doit jouer
+		return 0;
+	}
+	if(!isNotOutOfBoard(seq)){	//Si la piece avant ou apres le mouvement se trouve en dehors du tableau, c'est invalide
+		return 0;
+	}
+	return isMoveValid(game, c_avant, c_apres, pieceQuiJoue, taken);
 }
 
 /*
