@@ -1,3 +1,3 @@
-test2: dames.c dames.h test2.c
+test2: dames.c dames.h test.c
 	gcc -c dames.c
-	gcc -o test2 test2.c dames.o
+	gcc -o test testt.c dames.o
