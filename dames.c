@@ -48,20 +48,28 @@ struct game *new_game(int xsize, int ysize){
 	}
 	nPieces[PLAYER_WHITE] = 20;
 	nPieces[PLAYER_BLACK] = 20;
-	//jeu->moves ?
 	return jeu;
 }
 
 struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
 	struct game *jeu = (struct game *) malloc(sizeof(struct game));  
+	if(jeu == NULL){  // Si le malloc a échoué
+		printf("Mémoire insuffisante pour créer le jeu.\n");
+		exit(EXIT_FAILURE);
+	}
 	
 	// On initialise toutes les variables de la structure.
 	jeu -> xsize = xsize;
 	jeu -> ysize = ysize;
-	jeu -> board = (int **) board; 	// Pas besoin de créer un tableau, on nous donne un pointeur qui pointe deja vers les bonnes valeurs.
-	jeu -> cur_player = cur_player; 
-	jeu -> moves = (struct move *) malloc(sizeof(struct move));   // peut-etre faire un calloc plutot que malloc, par souci de proprete ?
-	return jeu;													  // vu qu'on initialise aucune variable de moves dans cette fonction...
+	jeu -> board = (int **) board; // Pas besoin de créer un tableau, on nous donne un pointeur qui pointe deja vers les bonnes valeurs.
+	jeu -> cur_player = cur_player;
+	jeu -> moves = (struct move *) malloc(sizeof(struct move));
+	jeu -> moves = NULL;
+	if(&(jeu->moves) == NULL){  // Si le malloc a échoué
+		printf("Erreur d'allocation de mémoire.\n");
+		exit(EXIT_FAILURE);
+	}
+	return jeu;										  
 }
 /*
  * Retourne la couleur de la pièce
@@ -126,7 +134,7 @@ int pieceBienPrise(const struct game *jeu, struct coord *prise, struct coord c_a
 	int pieceQuiJoue = (jeu -> board)[c_avant.x][c_avant.y];
 	
 	// On vérifie que la pièce qui joue et la pièce prise sont de couleurs différentes
-	if(getColor(piecePrise) ^ getColor(pieceQuiJoue) == 0x1){
+	if((getColor(piecePrise) ^ getColor(pieceQuiJoue)) == 0x1){
 		// On vérifie que la pièce qui joue a bien sauté au-dessus de la pièce prise :
 		return ( (c_avant.x + c_apres.x)/2 == prise -> x ) && ( (c_avant.y + c_apres.y)/2 == prise -> y ); 
 	}
@@ -167,7 +175,7 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 		int diagonale = getDiagonal(c_avant, c_apres);
 		if(diagonale == SUDEST){
 			piecePrise = (jeu -> board)[c_avant.x + 1][c_avant.y + 1];
-			if(piecePrise = 0x0){
+			if(piecePrise == 0x0){
 				return 0;
 			}
 			taken -> x = c_avant.x + 1;
@@ -175,7 +183,7 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 		}
 		else if(diagonale == SUDOUEST){
 			piecePrise = (jeu -> board)[c_avant.x - 1][c_avant.y + 1];
-			if(piecePrise = 0x0){
+			if(piecePrise == 0x0){
 				return 0;
 			}
 			taken -> x = c_avant.x - 1;
@@ -183,7 +191,7 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 		}
 		else if(diagonale == NORDEST){
 			piecePrise = (jeu -> board)[c_avant.x + 1][c_avant.y - 1];
-			if(piecePrise = 0x0){
+			if(piecePrise == 0x0){
 				return 0;
 			}
 			taken -> x = c_avant.x + 1;
@@ -191,7 +199,7 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 		}
 		else{
 			piecePrise = (jeu -> board)[c_avant.x - 1][c_avant.y - 1];
-			if(piecePrise = 0x0){
+			if(piecePrise == 0x0){
 				return 0;
 			}
 			taken -> x = c_avant.x - 1;
@@ -244,7 +252,7 @@ int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord
 			return 0;
 		}
 		else if(position != 0x0){
-			if(prise = 0){
+			if(prise == 0){
 				prise = 1;
 			}
 			else{
@@ -420,6 +428,7 @@ int apply_moves(struct game *game, const struct move *moves){
 		// On inverse le joueur qui joue
 		game -> cur_player = ~(game -> cur_player) & 1;
 	}
+	return 0;
 }
 
 /*
@@ -492,7 +501,7 @@ void free_move_seq(struct move_seq * seq){
 // Fonctionne, normalement. Verifié avec Valgrind
 void free_game(struct game *game){
 	if(game == NULL){
-		printf("Il n'y a pas de jeu a liberer\n");
+		printf("Il n'y a pas de jeu à libérer\n");
 		exit(EXIT_FAILURE);
 	}
 	int i;
@@ -506,6 +515,7 @@ void free_game(struct game *game){
 		free(precedent);
 		precedent = game -> moves;
 	}
+	printf("Flag\n");
 	free(game -> board);
 	free(game);
 }

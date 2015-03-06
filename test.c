@@ -1,3 +1,4 @@
+#include <CUnit/CUnit.h>
 #include <CUnit/Basic.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -45,13 +46,30 @@ void test_load_game(){
 	m1->seq = seq1;
 	print_board(jeu_1);
 	int m1_check = apply_moves(jeu_1, m1);
+	CU_ASSERT_EQUAL(m1_check, 0);
 	printf("%d\n", m1_check);
 	print_board(jeu_1);
-	// Un double pointeur non constant ne peut pas être utilisé en argument constant
-	const int *plateau = *(jeu_1->board);
+	
+	// Un double pointeur non constant ne peut pas être utilisé en tant qu'argument constant
+	const int *plateau = (int *) malloc(sizeof(int));
+	if(plateau == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	plateau = *(jeu_1->board);
 	struct game *jeu_2 = load_game(10, 10, &plateau, jeu_1->cur_player);
+	CU_ASSERT_PTR_NOT_NULL(jeu_2);
+	/*struct game *jeu_3 = load_game(-1, 100, &plateau, jeu_1->cur_player);
+	CU_ASSERT_PTR_NULL(jeu_3);
+	
+	struct game *jeu_4 = load_game(10, 10, NULL, jeu_1->cur_player);
+	CU_ASSERT_PTR_NULL(jeu_4);*/
+	
 	free_game(jeu_1);
 	free_game(jeu_2);
+	//free_game(jeu_3);
+	//free_game(jeu_4);
 }
 
 int main(int argc, char *argv[]){
@@ -72,7 +90,8 @@ int main(int argc, char *argv[]){
 	}
 	
 	// Ajout de nos tests à notre suite de tests
-	if(NULL == CU_add_test(pSuite, "test of test_newgame()", test_new_game)){
+	if((NULL == CU_add_test(pSuite, "test de test_new_game()", test_new_game)) ||
+		(NULL == CU_add_test(pSuite, "test de test_load_game()", test_load_game))){
 		CU_cleanup_registry();
 		return CU_get_error();
 	}
