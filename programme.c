@@ -30,10 +30,13 @@ void free_queue(){
 		return;
 	}
 	struct move_seq *precedent = head;
+	head = head -> next;
 	while(head != tail){
-		head = head -> next;
 		free(precedent);
+		precedent = head;
+		head = head -> next;
 	}
+	free(precedent);
 	free(head);
 	head = NULL;
 	tail = NULL;
