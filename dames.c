@@ -76,7 +76,7 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
  * @piece est une pièce valide
  */
 int getColor(int piece){
-	return (piece & 0x4) >> 2;
+	return ((piece & 0x4) >> 2) & 1; 
 }
 
 /*
@@ -103,16 +103,16 @@ int isDame(int piece){
  * @c_avant et @c_apres sont des coordonnées valides
  */
 int getDiagonal(struct coord c_avant, struct coord c_apres){
-	if(c_apres.x - c_avant.x > 0 || c_apres.y - c_avant.y > 0){
+	if(c_apres.x - c_avant.x > 0 && c_apres.y - c_avant.y > 0){
 		return SUDEST;
 	}
-	else if(c_apres.x - c_avant.x > 0 || c_apres.y - c_avant.y < 0){
+	else if(c_apres.x - c_avant.x > 0 && c_apres.y - c_avant.y < 0){
 		return NORDEST;
 	}
-	else if(c_apres.x - c_avant.x < 0 || c_apres.y - c_avant.y > 0){
+	else if(c_apres.x - c_avant.x < 0 && c_apres.y - c_avant.y > 0){
 		return SUDOUEST;
 	}	
-	else if(c_apres.x - c_avant.x < 0 || c_apres.y - c_avant.y < 0){
+	else if(c_apres.x - c_avant.x < 0 && c_apres.y - c_avant.y < 0){
 		return NORDOUEST;
 	}
 	else{
@@ -179,7 +179,7 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 				return 0;
 			}
 			taken -> x = c_avant.x + 1;
-			taken -> y = c_avant.x + 1;
+			taken -> y = c_avant.y + 1;
 		}
 		else if(diagonale == SUDOUEST){
 			piecePrise = (jeu -> board)[c_avant.x - 1][c_avant.y + 1];
@@ -187,7 +187,7 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 				return 0;
 			}
 			taken -> x = c_avant.x - 1;
-			taken -> y = c_avant.x + 1;
+			taken -> y = c_avant.y + 1;
 		}
 		else if(diagonale == NORDEST){
 			piecePrise = (jeu -> board)[c_avant.x + 1][c_avant.y - 1];
@@ -195,7 +195,7 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 				return 0;
 			}
 			taken -> x = c_avant.x + 1;
-			taken -> y = c_avant.x - 1;
+			taken -> y = c_avant.y - 1;
 		}
 		else{
 			piecePrise = (jeu -> board)[c_avant.x - 1][c_avant.y - 1];
@@ -203,7 +203,7 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 				return 0;
 			}
 			taken -> x = c_avant.x - 1;
-			taken -> y = c_avant.x - 1;
+			taken -> y = c_avant.y - 1;
 		}
 		return 2;
 	}
@@ -355,6 +355,19 @@ void push_move(struct game *jeu){
 	jeu -> moves = newMove;
 }
 
+
+/*
+ * Libère les ressources allouées à une séquence d'un move
+ */
+void free_move_seq(struct move_seq * seq){
+	struct move_seq *precedent = seq;
+	while(precedent != NULL){
+		seq = seq -> next;
+		free(precedent);
+		precedent = seq;
+	}	
+}
+
 /*
  * Supprime un move en tête de pile du jeu, et le retourne.
  */
@@ -368,9 +381,10 @@ struct move *pop_move(struct game *jeu){
 }
 
 int apply_moves(struct game *game, const struct move *moves){
-	struct move *current = (struct move *) moves;
+	const struct move *current = moves;
 	struct move_seq *sequence = NULL;
-	struct coord *taken = NULL;
+	struct coord prise = {-1,-1};
+	struct coord *taken = &prise;
 	struct move_seq *previousSeq = NULL;
 	struct coord c_avant;
 	struct coord c_apres;
@@ -387,6 +401,9 @@ int apply_moves(struct game *game, const struct move *moves){
 		// On parcourt la liste de séquences du move
 		while(sequence != NULL){
 			if(previousValid == 1 || gotDame == 1){
+				struct move *mv = pop_move(game);
+				free_move_seq(mv -> seq);
+				free(mv);
 				return -1;
 			}
 			isValid = is_move_seq_valid(game, sequence, previousSeq, taken);
@@ -406,9 +423,10 @@ int apply_moves(struct game *game, const struct move *moves){
 				c_avant = sequence -> c_old;
 				c_apres = sequence -> c_new;
 				playerPiece = (game -> board)[c_avant.x][c_avant.y];
-				(game -> board)[c_apres.x][c_apres.y] = (game -> board)[c_avant.x][c_avant.y];
+				(game -> board)[c_apres.x][c_apres.y] = playerPiece;
 				(game -> board)[c_avant.x][c_avant.y] = 0x0;
 				ennemy = (game -> board)[taken -> x][taken -> y];
+				printf("hey3 : %d, %d\n", taken -> x, taken -> y);
 				(game -> board)[taken -> x][taken -> y] = 0x0;
 				nPieces[getColor(ennemy)]--;
 				if(nPieces[getColor(ennemy)] == 0){
@@ -416,6 +434,7 @@ int apply_moves(struct game *game, const struct move *moves){
 				}
 			}
 			push_seq(game, sequence, taken, playerPiece, ennemy);
+			printf("push : %d\n", playerPiece);
 			previousSeq = sequence;
 			// On récupère une dame si nécessaire et on récupère le résultat
 			gotDame = transformDame(game, c_apres);
@@ -438,6 +457,7 @@ int undo_seq(struct game *jeu, struct move_seq *sequence){
 	if(sequence == NULL || jeu == NULL){
 		return -1;
 	}
+	printf("piece : %d\n", sequence -> old_orig);
 	(jeu -> board)[(sequence -> c_old).x][(sequence -> c_old).y] = sequence -> old_orig;
 	(jeu -> board)[(sequence -> c_new).x][(sequence -> c_new).y] = 0x0;
 	if(sequence -> piece_value != 0x0){
@@ -449,9 +469,11 @@ int undo_seq(struct game *jeu, struct move_seq *sequence){
 
 int undo_moves(struct game *game, int n){
 	int i;
-	struct move *mouvement = pop_move(game);
+	struct move *mouvement = game -> moves;
 	struct move_seq *current;
 	for(i = 0 ; i < n && mouvement != NULL ; i++){
+		mouvement = pop_move(game);
+		printf("%d\n",i);
 		current = mouvement -> seq;
 		while(current != NULL){
 			undo_seq(game, current);
@@ -462,15 +484,42 @@ int undo_moves(struct game *game, int n){
 		// On inverse le joueur qui doit jouer
 		game -> cur_player = ~(game -> cur_player) & 1;
 		free(mouvement);
-		mouvement = pop_move(game);
+		mouvement = game -> moves;
 	}
 }
 
 void print_board(const struct game *game){
 	int i,j;	
+	char carac;
+	printf("  ");
 	for(j = 0 ; j < 10 ; j++){
+		printf("%d ", j);
+	}
+	printf("\n");
+
+	for(j = 0 ; j < 10 ; j++){
+		printf("%d ", j);
 		for(i = 0 ; i < 10 ; i++){
-			printf("%d ", (game -> board)[i][j]);
+			if((game -> board)[i][j] == 0x0){
+				carac = 'X';
+			}
+			else if((game -> board)[i][j] == 0x1){
+				carac = 'n';
+			}
+			else if((game -> board)[i][j] == 0x5){
+				carac = 'b';
+			}
+			else if((game -> board)[i][j] == 0x3){
+				carac = 'N';
+			}
+			else if((game -> board)[i][j] == 0x7){
+				carac = 'B';
+			}
+			else{
+				printf("erreur de damier...\n");
+				return;
+			}
+			printf("%c ", carac);
 		}
 		printf("\n");
 	}
@@ -486,17 +535,6 @@ void print_board(const struct game *game){
 	printf("Pieces restantes : %d noires, %d blanches.\n", nPieces[PLAYER_BLACK], nPieces[PLAYER_WHITE]);
 }
 
-/*
- * Libère les ressources allouées à une séquence d'un move
- */
-void free_move_seq(struct move_seq * seq){
-	struct move_seq *precedent = seq;
-	while(precedent != NULL){
-		seq = seq -> next;
-		free(precedent);
-		precedent = seq;
-	}	
-}
 
 // Fonctionne, normalement. Verifié avec Valgrind
 void free_game(struct game *game){
