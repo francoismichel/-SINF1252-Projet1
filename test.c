@@ -51,14 +51,14 @@ void test_load_game(){
 	print_board(jeu_1);
 	
 	// Un double pointeur non constant ne peut pas être utilisé en tant qu'argument constant
-	const int *plateau = (int *) malloc(sizeof(int));
+	const int **plateau = (const int **) malloc(10*sizeof(int *));
 	if(plateau == NULL){
 		printf("Erreur d'allocation de mémoire\n");
 		exit(EXIT_FAILURE);
 	}
 	
-	plateau = *(jeu_1->board);
-	struct game *jeu_2 = load_game(10, 10, &plateau, jeu_1->cur_player);
+	plateau = (const int**) jeu_1->board;
+	struct game *jeu_2 = load_game(10, 10, plateau, jeu_1->cur_player);
 	CU_ASSERT_PTR_NOT_NULL(jeu_2);
 	/*struct game *jeu_3 = load_game(-1, 100, &plateau, jeu_1->cur_player);
 	CU_ASSERT_PTR_NULL(jeu_3);

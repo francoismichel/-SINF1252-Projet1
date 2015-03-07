@@ -260,6 +260,7 @@ int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord
 			}
 		}
 	}
+	return 1; // Fonction à corriger au niveau des return
 }
 
 int isMoveValid(const struct game *jeu, struct coord c_avant, struct coord c_apres, int piece, struct coord *taken){
@@ -486,6 +487,7 @@ int undo_moves(struct game *game, int n){
 		free(mouvement);
 		mouvement = game -> moves;
 	}
+	return 0; // Description manquante, que retourner ?
 }
 
 void print_board(const struct game *game){
@@ -553,7 +555,7 @@ void free_game(struct game *game){
 		free(precedent);
 		precedent = game -> moves;
 	}
-	printf("Flag\n");
+	printf("Erreur à la ligne suivante lors du free d'une game loadée\n");
 	free(game -> board);
 	free(game);
 }
