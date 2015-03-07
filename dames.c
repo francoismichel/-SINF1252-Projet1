@@ -347,6 +347,19 @@ void push_move(struct game *jeu){
 	jeu -> moves = newMove;
 }
 
+
+/*
+ * Libère les ressources allouées à une séquence d'un move
+ */
+void free_move_seq(struct move_seq * seq){
+	struct move_seq *precedent = seq;
+	while(precedent != NULL){
+		seq = seq -> next;
+		free(precedent);
+		precedent = seq;
+	}	
+}
+
 /*
  * Supprime un move en tête de pile du jeu, et le retourne.
  */
@@ -360,9 +373,9 @@ struct move *pop_move(struct game *jeu){
 }
 
 int apply_moves(struct game *game, const struct move *moves){
-	struct move *current = (struct move *) moves;
+	const struct move *current = moves;
 	struct move_seq *sequence = NULL;
-	struct coord prise = {0,0};
+	struct coord prise = {-1,-1};
 	struct coord *taken = &prise;
 	struct move_seq *previousSeq = NULL;
 	struct coord c_avant;
@@ -380,6 +393,9 @@ int apply_moves(struct game *game, const struct move *moves){
 		// On parcourt la liste de séquences du move
 		while(sequence != NULL){
 			if(previousValid == 1 || gotDame == 1){
+				struct move *mv = pop_move(game);
+				free_move_seq(mv -> seq);
+				free(mv);
 				return -1;
 			}
 			isValid = is_move_seq_valid(game, sequence, previousSeq, taken);
@@ -410,6 +426,7 @@ int apply_moves(struct game *game, const struct move *moves){
 				}
 			}
 			push_seq(game, sequence, taken, playerPiece, ennemy);
+			printf("push : %d\n", playerPiece);
 			previousSeq = sequence;
 			// On récupère une dame si nécessaire et on récupère le résultat
 			gotDame = transformDame(game, c_apres);
@@ -431,6 +448,7 @@ int undo_seq(struct game *jeu, struct move_seq *sequence){
 	if(sequence == NULL || jeu == NULL){
 		return -1;
 	}
+	printf("piece : %d\n", sequence -> old_orig);
 	(jeu -> board)[(sequence -> c_old).x][(sequence -> c_old).y] = sequence -> old_orig;
 	(jeu -> board)[(sequence -> c_new).x][(sequence -> c_new).y] = 0x0;
 	if(sequence -> piece_value != 0x0){
@@ -442,9 +460,11 @@ int undo_seq(struct game *jeu, struct move_seq *sequence){
 
 int undo_moves(struct game *game, int n){
 	int i;
-	struct move *mouvement = pop_move(game);
+	struct move *mouvement = game -> moves;
 	struct move_seq *current;
 	for(i = 0 ; i < n && mouvement != NULL ; i++){
+		mouvement = pop_move(game);
+		printf("%d\n",i);
 		current = mouvement -> seq;
 		while(current != NULL){
 			undo_seq(game, current);
@@ -455,7 +475,7 @@ int undo_moves(struct game *game, int n){
 		// On inverse le joueur qui doit jouer
 		game -> cur_player = ~(game -> cur_player) & 1;
 		free(mouvement);
-		mouvement = pop_move(game);
+		mouvement = game -> moves;
 	}
 }
 
@@ -506,17 +526,6 @@ void print_board(const struct game *game){
 	printf("Pieces restantes : %d noires, %d blanches.\n", nPieces[PLAYER_BLACK], nPieces[PLAYER_WHITE]);
 }
 
-/*
- * Libère les ressources allouées à une séquence d'un move
- */
-void free_move_seq(struct move_seq * seq){
-	struct move_seq *precedent = seq;
-	while(precedent != NULL){
-		seq = seq -> next;
-		free(precedent);
-		precedent = seq;
-	}	
-}
 
 // Fonctionne, normalement. Verifié avec Valgrind
 void free_game(struct game *game){
