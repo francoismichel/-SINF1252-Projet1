@@ -26,28 +26,64 @@ void enqueue(struct coord oldc, struct coord newc){
 }
 
 void free_queue(){
+	printf("coucou1\n");
 	if(head == NULL || tail == NULL){
 		return;
 	}
 	struct move_seq *precedent = head;
-	head = head -> next;
-	while(head != tail){
+	struct move_seq *current = head -> next;
+	while(current != NULL){
 		free(precedent);
-		precedent = head;
-		head = head -> next;
+		precedent = current;
+		current = current -> next;
 	}
 	free(precedent);
-	free(head);
 	head = NULL;
 	tail = NULL;
 }
 
+int isUndo(char *input){
+	if(input == NULL){
+		return 0;
+	}
+	char *undo = "undo ";
+	int longueurUndo = strlen(undo);
+	if(strlen(input) <= longueurUndo){
+		return 0;
+	}
+	int i;
+	for(i = 0 ; i < longueurUndo ; i++){
+		if(input[i] != undo[i]){
+			return 0;
+		}
+	}
+	char *res = NULL;
+	int n = (int) strtol(input + longueurUndo, &res, 10);
+	if(n <= 0 || res == input + longueurUndo){
+		return 0;
+	}
+	else{
+		return n;
+	}
+}
 
-
+/*
+ * retourne 0 si l'input est correct, et crée une liste chainée de séquences à appliquer sur le jeu.
+ * retourne -1 si l'input est incorrect
+ * retourne -2 si l'utilisateur demande de quitter le jeu
+ * retourne un nombre n strictement positif s'il y a n moves à annuler.
+ */
 int isCorrectInput(char *input){
     if(input == NULL){
-        return 0;
+        return -1;
     }
+	if(strcmp(input, "exit\n") == 0){
+		return -2;
+	}
+	int n = isUndo(input);
+	if(n > 0){	// s'il y a des coups à annuler, le signale.
+		return n;
+	}
     char chaine[] = "(x,y) to (x,y)";
 	char pattern[] = " , ";
     int longueur = strlen(chaine);
@@ -61,7 +97,7 @@ int isCorrectInput(char *input){
         for(i = 0 ; i < longueur ; i++){
             if(input[j] != chaine[i] && i != 1 && i != 10 && i != 3 && i != 12){
 				printf("erreur1 : %c\n", input[j]);
-                return 0;
+                return -1;
             }
             if(i == 3){
                 chiffre = (int) strtol(&input[j - 2], poubelle, 10);
@@ -79,35 +115,39 @@ int isCorrectInput(char *input){
             j++;
         }
         if(input[j] == '\n'){
-            return 1;
+            return 0;
         }
         else if(input[j] != ' '){
 			printf("erreur2 : %c\n", input[j]);
-            return 0;
+            return -1;
         }
         j++;
         for(i = 1 ; i < longueurPattern ; i++){
             if(input[j] != pattern[i]){
 				printf("erreur3 : %c\n", input[j]);
-                return 0;
+                return -1;
             }
             j++;
         }
     }
-    return 1;
+    return 0;
 }
-
+/*
+ * récupère la séquence à jouer et la met dans une liste chainée de move_seq, prête a etre appliquée au jeu
+ * retourne -2 s'il faut quitter le jeu
+ */
 int getSequence(char *chaine){
     fgets(chaine, 100, stdin);
-	printf("entre : %s\n", chaine);
-    while(!isCorrectInput(chaine)){
-		if(strcmp(chaine, "end\n") == 0){
-			return -1;
+	//printf("entre : %s\n", chaine);
+	int n = isCorrectInput(chaine);
+    while(n == -1){
+		if(n == -2){
+			return -2;
 		}
         printf("Vous n'avez malheureusement pas entre une commande valide...\n");
         return getSequence(chaine);
     }
-	return 0;
+	return n;
 	
 }
 
@@ -121,17 +161,24 @@ int main(int argc, char *argv[]){
     struct game *jeu = new_game(10,10);
 	int jouer = 0;
 	struct move mouvement;
+	int n = 0;
 	while(jouer != -1){
     	print_board(jeu);
-    	printf("Quel pion deplacer ? ('(x1,y1) to (x2,y2)')\n");
-		if(getSequence(input) == -1){
+    	printf("Quel pion deplacer ? ('(x1,y1) to (x2,y2) , (x3,y3) to ...')\n");
+		printf("taper 'exit' pour quitter le jeu\n");
+		printf("taper 'undo n' pour annuler n mouvements de joueurs\n");
+		n = getSequence(input);
+		if(n == -2){
 			jouer = -1;
 		}
-		else{
+		else if(n == 0){
 			mouvement.next = NULL;
 			mouvement.seq = head;
 			apply_moves(jeu, &mouvement);
 			free_queue();
+		}
+		else{
+			undo_moves(jeu, n);
 		}
 	}
     return EXIT_SUCCESS;
