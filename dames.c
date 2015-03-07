@@ -466,9 +466,10 @@ void print_board(const struct game *game){
 	for(j = 0 ; j < 10 ; j++){
 		printf("%d ", j);
 	}
-	printf("\n");0
+	printf("\n");
 
 	for(j = 0 ; j < 10 ; j++){
+		printf("%d ", j);
 		for(i = 0 ; i < 10 ; i++){
 			if((game -> board)[i][j] == 0x0){
 				carac = 'X';
