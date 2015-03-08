@@ -89,7 +89,6 @@ int main(int argc, char *argv[]){
 		CU_cleanup_registry();
 		return CU_get_error();
 	}
-	
 	// Ajout de nos tests à notre suite de tests
 	if((NULL == CU_add_test(pSuite, "test de test_new_game()", test_new_game)) ||
 		(NULL == CU_add_test(pSuite, "test de test_load_game()", test_load_game))){
@@ -97,11 +96,12 @@ int main(int argc, char *argv[]){
 		return CU_get_error();
 	}
 	
+	printf("Segfault provoqué par la ligne suivante\n");
 	// Exécution des tests
 	CU_basic_run_tests();
 	
 	// Afficher le rapport des tests qui ont échoué
-	// CU_basic_show_failures(CU_get_failure_list());
+	CU_basic_show_failures(CU_get_failure_list());
 	
 	// Nécessaire à la fin : libération des ressources utilisées par les tests
 	CU_cleanup_registry();

@@ -562,7 +562,5 @@ void free_game(struct game *game){
 		free(precedent);
 		precedent = game -> moves;
 	}
-	printf("Erreur à la ligne suivante lors du free d'une game loadée\n%p\n", &(game->board));
-	free(game -> board);
 	free(game);
 }
