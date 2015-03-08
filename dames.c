@@ -62,6 +62,13 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
 	jeu -> xsize = xsize;
 	jeu -> ysize = ysize;
 	jeu -> board = (int **) board; // Pas besoin de créer un tableau, on nous donne un pointeur qui pointe deja vers les bonnes valeurs.
+	/*int i, j;
+	for(i = 0 ; i < xsize ; i++){
+		for(j = 0 ; j < ysize ; j++){
+			printf("Flag\n");
+			(jeu->board)[i][j] = *(*((board) + j) + i);
+		}
+	}*/
 	jeu -> cur_player = cur_player;
 	jeu -> moves = (struct move *) malloc(sizeof(struct move));
 	jeu -> moves = NULL;
@@ -555,7 +562,7 @@ void free_game(struct game *game){
 		free(precedent);
 		precedent = game -> moves;
 	}
-	printf("Erreur à la ligne suivante lors du free d'une game loadée\n");
+	printf("Erreur à la ligne suivante lors du free d'une game loadée\n%p\n", &(game->board));
 	free(game -> board);
 	free(game);
 }

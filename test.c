@@ -60,6 +60,7 @@ void test_load_game(){
 	plateau = (const int**) jeu_1->board;
 	struct game *jeu_2 = load_game(10, 10, plateau, jeu_1->cur_player);
 	CU_ASSERT_PTR_NOT_NULL(jeu_2);
+	print_board(jeu_2);
 	/*struct game *jeu_3 = load_game(-1, 100, &plateau, jeu_1->cur_player);
 	CU_ASSERT_PTR_NULL(jeu_3);
 	
