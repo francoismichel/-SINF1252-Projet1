@@ -1,12 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "dames.h"
-#define NORDOUEST 1
-#define NORDEST 2
-#define SUDOUEST 3
-#define SUDEST 4
-
-int nPieces[2];
+#include "dames_intermediate.h"
 
 struct game *new_game(int xsize, int ysize){
 	// On alloue de la mémoire pour créer la structure du jeu
@@ -17,6 +12,10 @@ struct game *new_game(int xsize, int ysize){
 	}
 	int i;
 	jeu -> board  = (int **) malloc(xsize*sizeof(int *));
+	if ((jeu->board) == NULL){ // Si le malloc a échoué
+		printf("Mémoire insuffisante pour créer le plateau de jeu.\n");
+		exit(EXIT_FAILURE);
+	}
 	for(i = 0 ; i < xsize ; i++){
 		// On alloue de la mémoire pour le plateau de jeu.
 		*((jeu -> board) + i) = (int *) malloc(ysize*sizeof(int));
@@ -52,6 +51,16 @@ struct game *new_game(int xsize, int ysize){
 }
 
 struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
+	
+	// Vérification de la taille du plateau de jeu
+	if (xsize != 10 || ysize != 10) return NULL;
+	
+	// Vérification du plateau de jeu donné
+	if (board == NULL) return NULL;
+	
+	// Vérification du tour du joueur donné
+	if ((cur_player != PLAYER_BLACK) && (cur_player != PLAYER_WHITE)) return NULL;
+	
 	struct game *jeu = (struct game *) malloc(sizeof(struct game));  
 	if(jeu == NULL){  // Si le malloc a échoué
 		printf("Mémoire insuffisante pour créer le jeu.\n");
@@ -61,14 +70,30 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
 	// On initialise toutes les variables de la structure.
 	jeu -> xsize = xsize;
 	jeu -> ysize = ysize;
-	jeu -> board = (int **) board; // Pas besoin de créer un tableau, on nous donne un pointeur qui pointe deja vers les bonnes valeurs.
-	/*int i, j;
+	
+	// On recréé un plateau de jeu pour le jeu chargé
+	// L'opération est nécessaire, pour éviter de libérer deux fois le même plateau,
+	// Dans le cas où on libère un jeu créé et un jeu chargé à partir de ce dernier.
+	jeu -> board  = (int **) malloc(xsize*sizeof(int *));
+	if ((jeu->board) == NULL){ // Si le malloc a échoué
+		printf("Mémoire insuffisante pour créer le plateau de jeu.\n");
+		exit(EXIT_FAILURE);
+	}
+	int i, j;
+	for(i = 0 ; i < xsize ; i++){
+		// On alloue de la mémoire pour le plateau de jeu.
+		*((jeu -> board) + i) = (int *) malloc(ysize*sizeof(int));
+		if((jeu -> board) + i == NULL){ // Si le malloc a échoué
+			printf("Mémoire insuffisante pour créer le plateau de jeu.\n");
+			exit(EXIT_FAILURE);
+		}
+	}
 	for(i = 0 ; i < xsize ; i++){
 		for(j = 0 ; j < ysize ; j++){
-			printf("Flag\n");
-			(jeu->board)[i][j] = *(*((board) + j) + i);
+			(jeu->board)[i][j] = *(*((board) + i) + j);
 		}
-	}*/
+	}
+	
 	jeu -> cur_player = cur_player;
 	jeu -> moves = (struct move *) malloc(sizeof(struct move));
 	jeu -> moves = NULL;
@@ -78,37 +103,28 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
 	}
 	return jeu;										  
 }
-/*
- * Retourne la couleur de la pièce
- * @piece est une pièce valide
- */
+
 int getColor(int piece){
+	if ((piece != 0x1) && (piece != 0x5) && (piece != 0x3) && (piece != 0x7)){
+		printf("Pièce non valide, impossible de récupérer la couleur");
+		exit(EXIT_FAILURE);
+	}
 	return ((piece & 0x4) >> 2) & 1; 
 }
 
-/*
- * Retourne 0 si la séquence ne mène pas vers une position hors du plateau de jeu. Retourne 1 sinon
- * @seq est une séquence valide
- */
-int isNotOutOfBoard(const struct move_seq *seq){
+int isOutOfBoard(const struct move_seq *seq){
 	struct coord c_avant = seq -> c_old;
 	struct coord c_apres = seq -> c_new;
-	return c_avant.x >= 0 && c_avant.x < 10 && c_avant.y >= 0 && c_avant.y < 10
-		&& c_apres.x >= 0 && c_apres.x < 10 && c_apres.y >= 0 && c_apres.y < 10;
+	if (((c_avant.x >= 0) && (c_avant.x < 10) && (c_avant.y) >= 0 && (c_avant.y < 10)
+		&& (c_apres.x >= 0) && (c_apres.x < 10) && (c_apres.y) >= 0 && (c_apres.y) < 10) == 1)
+		return 0;
+	else return 1;
 }
 
-/*
- * retourne 0 si la pièce n'est pas une dame, !0 si c'en est une
- * @piece est une pièce valide
- */
 int isDame(int piece){
  	return (piece & 0x2) == 0x2;
 }
 
-/*
- * Retourne la direction définie par les 2 coordonnée @c_avant et @c_apres
- * @c_avant et @c_apres sont des coordonnées valides
- */
 int getDiagonal(struct coord c_avant, struct coord c_apres){
 	if(c_apres.x - c_avant.x > 0 && c_apres.y - c_avant.y > 0){
 		return SUDEST;
@@ -127,15 +143,6 @@ int getDiagonal(struct coord c_avant, struct coord c_apres){
 	}
 }
 
-/*
- * Retourne 0 si la prise de la pièce n'est pas valide, retourne !0 si elle l'est
- * On considère que la prise est valide si :
- * - la pièce qui prend et la pièce prise sont de couleurs différentes
- * - la pièce qui prend a sauté au-dessus de la pièce prise :
- * 		cela signifie que les coordonnées de la pièce prise sont les moyennes des coordonnées de la pièce qui joue,
- *		avant et après avoir joué, si la piece qui joue est un pion.
- * @piece est une pièce valide
- */
 int pieceBienPrise(const struct game *jeu, struct coord *prise, struct coord c_avant, struct coord c_apres){
 	int piecePrise = (jeu -> board)[prise -> x][prise -> y];
 	int pieceQuiJoue = (jeu -> board)[c_avant.x][c_avant.y];
@@ -151,11 +158,6 @@ int pieceBienPrise(const struct game *jeu, struct coord *prise, struct coord c_a
 	}
 }
 
-/*
- * Retourne la distance diagonale parcourue entre @c_avant et @c_apres.
- * Sinon, retourne 0 (@c_avant et @c_apres ne forment pas un déplacement diagonal)
- * @c_avant et @c_apres sont des coordonnées valides
- */
 int isDiagonal(struct coord c_avant, struct coord c_apres){
 	int valAbs = abs(c_apres.x - c_avant.x);
 	if(valAbs == abs(c_apres.y - c_avant.y)){
@@ -228,10 +230,6 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 	}
 }
 
-/*
- * Retourne 0 si le déplacement de la dame de @c_avant à @c_apres est correct.
- * Retourne 1 sinon
- */
 int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken){
 	int valeurMove = isDiagonal(c_avant, c_apres);
 	if(valeurMove == 0){
@@ -303,20 +301,17 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
 	}
 	
 	// Si la pièce avant ou après le mouvement se trouve en dehors du tableau, c'est invalide
-	if(!isNotOutOfBoard(seq)){
-		return 0;	
+	if(isOutOfBoard(seq)){
+		return 0;
 	}	
 	return isMoveValid(game, c_avant, c_apres, pieceQuiJoue, taken);
 }
 
-/*
- * Ajoute une séquence dans le move en tête de pile du jeu
- */ 
 void push_seq(struct game *jeu, const struct move_seq *seq, struct coord *piece_taken, int old_orig, int piece_value){
 	struct move_seq *newSeq;
 	newSeq = (struct move_seq*) malloc(sizeof(struct move_seq));
 	if(newSeq == NULL){
-		printf("Erreur d'allocation de memoire\n");
+		printf("Erreur d'allocation de mémoire\n");
 		exit(EXIT_FAILURE);	
 	}
 	
@@ -331,10 +326,6 @@ void push_seq(struct game *jeu, const struct move_seq *seq, struct coord *piece_
 	(jeu -> moves) -> seq = newSeq;
 }
 
-/*
- * Transforme un pion en dame si nécessaire.
- * Retourne 1 si le pion a été transformé en dame, retourne 0 sinon.
- */
 int transformDame(struct game *jeu, struct coord c){
 	int piece = (jeu -> board)[c.x][c.y];
 	if(!isDame(piece)){
@@ -353,9 +344,6 @@ int transformDame(struct game *jeu, struct coord c){
 	return 0;
 } 
 
-/*
- * Ajoute un move vide en tête de pile du jeu
- */
 void push_move(struct game *jeu){
 	struct move *newMove = (struct move *) malloc(sizeof(struct move));
 	newMove -> next = jeu -> moves;
@@ -363,10 +351,6 @@ void push_move(struct game *jeu){
 	jeu -> moves = newMove;
 }
 
-
-/*
- * Libère les ressources allouées à une séquence d'un move
- */
 void free_move_seq(struct move_seq * seq){
 	struct move_seq *precedent = seq;
 	while(precedent != NULL){
@@ -376,9 +360,6 @@ void free_move_seq(struct move_seq * seq){
 	}	
 }
 
-/*
- * Supprime un move en tête de pile du jeu, et le retourne.
- */
 struct move *pop_move(struct game *jeu){
 	if(jeu == NULL || jeu -> moves == NULL){
 		return NULL;
@@ -458,9 +439,6 @@ int apply_moves(struct game *game, const struct move *moves){
 	return 0;
 }
 
-/*
- * Applique rétroactivement la séquence sur le jeu. Retourne -1 si jeu ou séquence est NULL, retourne 0 si tout s'est bien passé.
- */
 int undo_seq(struct game *jeu, struct move_seq *sequence){
 	if(sequence == NULL || jeu == NULL){
 		return -1;
@@ -544,8 +522,6 @@ void print_board(const struct game *game){
 	printf("Pieces restantes : %d noires, %d blanches.\n", nPieces[PLAYER_BLACK], nPieces[PLAYER_WHITE]);
 }
 
-
-// Fonctionne, normalement. Verifié avec Valgrind
 void free_game(struct game *game){
 	if(game == NULL){
 		printf("Il n'y a pas de jeu à libérer\n");
