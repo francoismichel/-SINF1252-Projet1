@@ -105,6 +105,9 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
 }
 
 int getColor(int piece){
+	if(piece == 0x0){
+		return 2;
+	}
 	if ((piece != 0x1) && (piece != 0x5) && (piece != 0x3) && (piece != 0x7)){
 		printf("Pièce non valide, impossible de récupérer la couleur");
 		exit(EXIT_FAILURE);
@@ -123,6 +126,86 @@ int isOutOfBoard(const struct move_seq *seq){
 
 int isDame(int piece){
  	return (piece & 0x2) == 0x2;
+}
+
+
+int isCoordInBoard(int x, int y){
+	return x < 10 && x >= 0 && y < 10 && y >= 0;
+}
+
+
+int isValidMovePiece(const struct game *jeu, int x, int y, int color){
+	int **plateau = jeu -> board;
+	int yMoveValue;	
+	//Si la couleur de la piece qu'on verifie n'est pas la couleur du joueur actuel, on retourne 0 direct
+	if(getColor(plateau[x][y]) != color){
+		return 0;
+	}
+	//Si le joueur actuel est PLAYER_WHITE, il avance de base vers le haut (y diminue, donc yMoveValue = -1)
+	if(getColor(plateau[x][y]) == PLAYER_WHITE){
+		yMoveValue = -1;
+	}
+	//Si le joueur actuel est PLAYER_BLACK, il avance de base vers le bas (y augmente, donc yMoveValue = 1)
+	else{
+		yMoveValue = 1;
+	}
+	//On regarde s'il y a des cases libres dans les cases adjacentes, "devant" la pièce
+	if((isCoordInBoard(x+1, y + yMoveValue) && (plateau[x+1][y + yMoveValue] == 0)) || 
+	(isCoordInBoard(x-1, y + yMoveValue) > 0 && (plateau[x-1][y + yMoveValue] == 0))){
+		return 1;
+	}
+	//Si c'est une dame
+	if(isDame(plateau[x][y])){
+		//On vérifie les cases "derrière elle" aussi
+		if((isCoordInBoard(x+1, y - yMoveValue) && (plateau[x+1][y - yMoveValue] == 0)) || 
+		(isCoordInBoard(x-1, y - yMoveValue) > 0 && (plateau[x-1][y - yMoveValue] == 0))){
+			return 1;
+		}	
+	}
+	//S'il n'y a pas de case libre adjacente à la pièce
+	else{
+		//On regarde si on peut sauter au-dessus d'un pion, par l'avant EST
+		if(isCoordInBoard(x+2, y + 2*yMoveValue) && getColor(plateau[x+1][y + yMoveValue]) != jeu -> cur_player){
+			if(plateau[x+2][y + 2*yMoveValue] == 0x0){
+				return 1;
+			}
+		}
+		//Par l'avant OUEST
+		if(isCoordInBoard(x-2, y + 2*yMoveValue) && getColor(plateau[x-1][y + yMoveValue]) != jeu -> cur_player){
+			if(plateau[x-2][y + 2*yMoveValue] == 0x0){
+				return 1;
+			}
+		}
+		//Par l'arrière EST
+		if(isCoordInBoard(x+2, y - 2*yMoveValue) && plateau[x+1][y - yMoveValue] != 0x0){
+			if(getColor(plateau[x+1][y - yMoveValue]) != jeu -> cur_player && plateau[x+2][y + 2*yMoveValue] == 0x0){
+				return 1;
+			}
+		}
+		//Par l'arrière OUEST
+		if(isCoordInBoard(x-2, y - 2*yMoveValue) && plateau[x-1][y - yMoveValue] != 0x0){
+			if(getColor(plateau[x-1][y - yMoveValue]) != jeu -> cur_player && plateau[x-2][y + 2*yMoveValue] == 0x0){
+				return 1;
+			}
+		}
+	}
+	//Si aucun des tests n'a réussi, c'est qu'il n'y a aucun mouvement valide pour cette pièce.
+	return 0;
+}
+
+int canPlay(const struct game *jeu, int color){
+	int i,j;
+	for(i = 0 ; i < jeu -> xsize ; i++){
+		for(j = 0 ; j < jeu -> ysize ; j++){
+			//On verifie si la piece aux coordonnees i,j peut jouer actuellement
+			if(isValidMovePiece(jeu, i, j, color)){
+				//Si la pièce peut effectuer un mouvement valide, on retourne 1
+				return 1;
+			}
+		}
+	}
+	//Si aucune pièce ne peut jouer actuellement, retourne 0
+	return 0;
 }
 
 int getDiagonal(struct coord c_avant, struct coord c_apres){
@@ -168,10 +251,6 @@ int isDiagonal(struct coord c_avant, struct coord c_apres){
 	}
 }
 
-/*
- * Retourne 0 si le déplacement du pion de @c_avant à @c_apres est correct.
- * Retourne 1 sinon
- */
 int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken){
 	int valeurMove = isDiagonal(c_avant, c_apres);
 	if(valeurMove == 0 || valeurMove > 2){
@@ -232,6 +311,7 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 
 int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken){
 	int valeurMove = isDiagonal(c_avant, c_apres);
+	//Si la dame ne bouge pas en diagonale
 	if(valeurMove == 0){
 		return 0;
 	}
@@ -253,19 +333,26 @@ int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord
 		else{
 			position = (jeu -> board)[c_avant.x - i][c_avant.y - i];
 		}
+		//Si on arrive sur une case d'une piece de la même couleur que nous
 		if(position != 0x0 && getColor(position) == getColor((jeu -> board)[c_avant.x][c_avant.y])){
+			//On ne peut pas, on retourne 0
 			return 0;
 		}
+		//Sinon, si on n'est pas sur une case vide et donc qu'on passe au-dessus d'une ennemi
 		else if(position != 0x0){
+			//Si on ne l'a jamais fait
 			if(prise == 0){
+				//On dit qu'on a pris un pion
 				prise = 1;
 			}
+			//Si on l'a déjà fait lors de la même séquence
 			else{
+				//On n'a pas le droit de le faire, on retourne donc 0
 				return 0;
 			}
 		}
 	}
-	return 1; // Fonction à corriger au niveau des return
+	return 1; //Si on a passé tous les test, la séquence est valide, on retourne 1
 }
 
 int isMoveValid(const struct game *jeu, struct coord c_avant, struct coord c_apres, int piece, struct coord *taken){
@@ -308,11 +395,18 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
 }
 
 void push_seq(struct game *jeu, const struct move_seq *seq, struct coord *piece_taken, int old_orig, int piece_value){
+	if(seq == NULL){
+		printf("aucune sequence a rajouter dans push_seq"\n);
+		return;
+	}
+	if(jeu == NULL){
+		printf("Aucun jeu auquel rajouter une séquence (pointeur NULL)\n");
+	}
 	struct move_seq *newSeq;
 	newSeq = (struct move_seq*) malloc(sizeof(struct move_seq));
 	if(newSeq == NULL){
-		printf("Erreur d'allocation de mémoire\n");
-		exit(EXIT_FAILURE);	
+		printf("Erreur d'allocation de mémoire dans push_seq\n");
+		return;	
 	}
 	
 	newSeq -> next = (jeu -> moves) -> seq;
@@ -424,6 +518,7 @@ int apply_moves(struct game *game, const struct move *moves){
 			}
 			push_seq(game, sequence, taken, playerPiece, ennemy);
 			printf("push : %d\n", playerPiece);
+			//Si le joueur adverse n'a plus de mouvement possible
 			previousSeq = sequence;
 			// On récupère une dame si nécessaire et on récupère le résultat
 			gotDame = transformDame(game, c_apres);
@@ -433,6 +528,10 @@ int apply_moves(struct game *game, const struct move *moves){
 		current = current -> next;
 		// Comme on change de move, ce n'est plus le même joueur qui joue, donc on réinitialise previousValid.
 		previousValid = 3;
+		if(!canPlay(game, color)){
+			//On retourne 1 pour dire qu'il a perdu
+			return 1;
+		}
 		// On inverse le joueur qui joue
 		game -> cur_player = ~(game -> cur_player) & 1;
 	}
@@ -454,13 +553,22 @@ int undo_seq(struct game *jeu, struct move_seq *sequence){
 }
 
 int undo_moves(struct game *game, int n){
+	if(game == NULL || n <= 0){
+		return -1;
+	}
 	int i;
 	struct move *mouvement = game -> moves;
+	if(mouvement == NULL){
+		return -1;
+	}
 	struct move_seq *current;
 	for(i = 0 ; i < n && mouvement != NULL ; i++){
 		mouvement = pop_move(game);
 		printf("%d\n",i);
 		current = mouvement -> seq;
+		if(current == NULL){
+			return -1;
+		}
 		while(current != NULL){
 			undo_seq(game, current);
 			mouvement -> seq = (mouvement -> seq) -> next;
