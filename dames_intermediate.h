@@ -6,12 +6,15 @@
 int nPieces[2];
 
 /*
- * Retourne la couleur de la pièce @pièce
+ * retourne la couleur de la piece en argument (PLAYER_WHITE ou PLAYER_BLACK)
+ * retourne 2 si la case est une case vide
+ * lance une erreur si la pièce n'est pas valide
  */
 int getColor(int piece);
 
 /*
- * Retourne 1 si la séquence mène vers une position hors du plateau de jeu. Retourne 0 sinon.
+ * Retourne 1 si la séquence est à/mène vers une position hors du plateau de jeu.
+ * Retourne 0 sinon.
  * @seq est une séquence valide
  */
 int isOutOfBoard(const struct move_seq *seq);
@@ -23,7 +26,26 @@ int isOutOfBoard(const struct move_seq *seq);
 int isDame(int piece);
 
 /*
+ * Retourne 1 si plateau[x][y] existe
+ * Retourne 0 sinon
+ */
+int isCoordInBoard(int x, int y);
+
+/*
+ * Retourne 1 si le joueur actuel du jeu peut jouer
+ * Retourne 0 sinon
+ */
+int canPlay(const struct game *jeu);
+
+/*
+ * Retourne 1 si la pièce située aux coordonnées x,y peut effectuer un mouvement au tour actuel
+ * Retourne 0 sinon
+ */
+int isValidMovePiece(const struct game *jeu, int x, int y);
+
+/*
  * Retourne la direction définie par les 2 coordonnée @c_avant et @c_apres
+ * retourne 0 si les deux coordonnées ne décrivent pas une diagonale
  * @c_avant et @c_apres sont des coordonnées valides
  */
 int getDiagonal(struct coord c_avant, struct coord c_apres);
