@@ -24,6 +24,7 @@ struct game *new_game(int xsize, int ysize){
 			exit(EXIT_FAILURE);
 		}
 	}
+	jeu -> moves = NULL;
 	jeu -> xsize = xsize;
 	jeu -> ysize = ysize;
 	jeu -> cur_player = PLAYER_WHITE;
@@ -580,7 +581,7 @@ int undo_moves(struct game *game, int n){
 		free(mouvement);
 		mouvement = game -> moves;
 	}
-	return 0; // Description manquante, que retourner ?
+	return 0; 
 }
 
 void print_board(const struct game *game){
