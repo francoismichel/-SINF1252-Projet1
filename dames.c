@@ -134,6 +134,14 @@ int isOutOfBoard(const struct move_seq *seq){
 }
 
 /*
+ * retourne 0 si la pièce n'est pas une dame, !0 si c'en est une
+ * @piece est une pièce valide
+ */
+int isDame(int piece){
+ 	return (piece & 0x2) == 0x2;
+}
+
+/*
  * Retourne 1 si plateau[x][y] existe
  * Retourne 0 sinon
  */
@@ -147,17 +155,17 @@ int isCoordInBoard(int x, int y){
  * Retourne 0 sinon
  */
 int isValidMovePiece(const struct game *jeu, int x, int y, int color){
-	const int **plateau = jeu -> board;
+	int **plateau = jeu -> board;
 	int yMoveValue;	
 	//Si la couleur de la piece qu'on verifie n'est pas la couleur du joueur actuel, on retourne 0 direct
 	if(getColor(plateau[x][y]) != color){
 		return 0;
 	}
-	//Si le joueur actuel est PAYER_WHITE, il avance de base vers le haut (y diminue, donc yMoveValue = -1)
+	//Si le joueur actuel est PLAYER_WHITE, il avance de base vers le haut (y diminue, donc yMoveValue = -1)
 	if(getColor(plateau[x][y]) == PLAYER_WHITE){
-		ymoveValue = -1;
+		yMoveValue = -1;
 	}
-	//Si le joueur actuel est PAYER_BLACK, il avance de base vers le bas (y augmente, donc yMoveValue = 1)
+	//Si le joueur actuel est PLAYER_BLACK, il avance de base vers le bas (y augmente, donc yMoveValue = 1)
 	else{
 		yMoveValue = 1;
 	}
@@ -253,6 +261,7 @@ int pieceBienPrise(const struct game *jeu, struct coord *prise, struct coord c_a
 		return 0;
 	}
 }
+
 
 int isDiagonal(struct coord c_avant, struct coord c_apres){
 	int valAbs = abs(c_apres.x - c_avant.x);
