@@ -154,11 +154,11 @@ int isCoordInBoard(int x, int y){
  * Retourne 1 si la pièce située aux coordonnées x,y peut effectuer un mouvement au tour actuel
  * Retourne 0 sinon
  */
-int isValidMovePiece(const struct game *jeu, int x, int y, int color){
+int isValidMovePiece(const struct game *jeu, int x, int y){
 	int **plateau = jeu -> board;
 	int yMoveValue;	
 	//Si la couleur de la piece qu'on verifie n'est pas la couleur du joueur actuel, on retourne 0 direct
-	if(getColor(plateau[x][y]) != color){
+	if(getColor(plateau[x][y]) != jeu -> cur_player){
 		return 0;
 	}
 	//Si le joueur actuel est PLAYER_WHITE, il avance de base vers le haut (y diminue, donc yMoveValue = -1)
@@ -213,12 +213,12 @@ int isValidMovePiece(const struct game *jeu, int x, int y, int color){
 	return 0;
 }
 
-int canPlay(const struct game *jeu, int color){
+int canPlay(const struct game *jeu){
 	int i,j;
 	for(i = 0 ; i < jeu -> xsize ; i++){
 		for(j = 0 ; j < jeu -> ysize ; j++){
 			//On verifie si la piece aux coordonnees i,j peut jouer actuellement
-			if(isValidMovePiece(jeu, i, j, color)){
+			if(isValidMovePiece(jeu, i, j)){
 				//Si la pièce peut effectuer un mouvement valide, on retourne 1
 				return 1;
 			}
@@ -542,10 +542,6 @@ int apply_moves(struct game *game, const struct move *moves){
 			push_seq(game, sequence, taken, playerPiece, ennemy);
 			printf("push : %d\n", playerPiece);
 			//Si le joueur adverse n'a plus de mouvement possible
-			if(!canPlay(game, ~(game -> cur_player) & 1)){
-				//On retourne 1 pour dire qu'il a perdu
-				return 1;
-			}
 			previousSeq = sequence;
 			// On récupère une dame si nécessaire et on récupère le résultat
 			gotDame = transformDame(game, c_apres);
@@ -557,6 +553,10 @@ int apply_moves(struct game *game, const struct move *moves){
 		previousValid = 3;
 		// On inverse le joueur qui joue
 		game -> cur_player = ~(game -> cur_player) & 1;
+		if(!canPlay(game)){
+			//On retourne 1 pour dire qu'il a perdu
+			return 1;
+		}
 	}
 	return 0;
 }
