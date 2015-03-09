@@ -146,11 +146,11 @@ int isCoordInBoard(int x, int y){
  * Retourne 1 si la pièce située aux coordonnées x,y peut effectuer un mouvement au tour actuel
  * Retourne 0 sinon
  */
-int isValidMovePiece(const struct game *jeu, int x, int y){
+int isValidMovePiece(const struct game *jeu, int x, int y, int color){
 	const int **plateau = jeu -> board;
 	int yMoveValue;	
 	//Si la couleur de la piece qu'on verifie n'est pas la couleur du joueur actuel, on retourne 0 direct
-	if(getColor(plateau[x][y]) != jeu -> cur_player){
+	if(getColor(plateau[x][y]) != color){
 		return 0;
 	}
 	//Si le joueur actuel est PAYER_WHITE, il avance de base vers le haut (y diminue, donc yMoveValue = -1)
@@ -205,12 +205,12 @@ int isValidMovePiece(const struct game *jeu, int x, int y){
 	return 0;
 }
 
-int isValidMove(const struct game *jeu){
+int canPlay(const struct game *jeu, int color){
 	int i,j;
 	for(i = 0 ; i < jeu -> xsize ; i++){
 		for(j = 0 ; j < jeu -> ysize ; j++){
 			//On verifie si la piece aux coordonnees i,j peut jouer actuellement
-			if(isValidMovePiece(jeu, i, j)){
+			if(isValidMovePiece(jeu, i, j, color)){
 				//Si la pièce peut effectuer un mouvement valide, on retourne 1
 				return 1;
 			}
@@ -514,12 +514,17 @@ int apply_moves(struct game *game, const struct move *moves){
 				printf("hey3 : %d, %d\n", taken -> x, taken -> y);
 				(game -> board)[taken -> x][taken -> y] = 0x0;
 				nPieces[getColor(ennemy)]--;
-				if(nPieces[getColor(ennemy)] == 0 || !isMoveValid(jeu)){
+				if(nPieces[getColor(ennemy)] == 0){
 					return 1;
 				}
 			}
 			push_seq(game, sequence, taken, playerPiece, ennemy);
 			printf("push : %d\n", playerPiece);
+			//Si le joueur adverse n'a plus de mouvement possible
+			if(!canPlay(game, ~(game -> cur_player) & 1)){
+				//On retourne 1 pour dire qu'il a perdu
+				return 1;
+			}
 			previousSeq = sequence;
 			// On récupère une dame si nécessaire et on récupère le résultat
 			gotDame = transformDame(game, c_apres);
