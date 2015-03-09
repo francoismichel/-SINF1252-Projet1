@@ -326,8 +326,13 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 	}
 }
 
+/*
+ * Retourne 1 si le mouvement est correct pour une dame
+ * Retourne 0 sinon
+ */
 int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken){
 	int valeurMove = isDiagonal(c_avant, c_apres);
+	//Si la dame ne bouge pas en diagonale
 	if(valeurMove == 0){
 		return 0;
 	}
@@ -349,19 +354,26 @@ int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord
 		else{
 			position = (jeu -> board)[c_avant.x - i][c_avant.y - i];
 		}
+		//Si on arrive sur une case d'une piece de la même couleur que nous
 		if(position != 0x0 && getColor(position) == getColor((jeu -> board)[c_avant.x][c_avant.y])){
+			//On ne peut pas, on retourne 0
 			return 0;
 		}
+		//Sinon, si on n'est pas sur une case vide et donc qu'on passe au-dessus d'une ennemi
 		else if(position != 0x0){
+			//Si on ne l'a jamais fait
 			if(prise == 0){
+				//On dit qu'on a pris un pion
 				prise = 1;
 			}
+			//Si on l'a déjà fait lors de la même séquence
 			else{
+				//On n'a pas le droit de le faire, on retourne donc 0
 				return 0;
 			}
 		}
 	}
-	return 1; // Fonction à corriger au niveau des return
+	return 1; //Si on a passé tous les test, la séquence est valide, on retourne 1
 }
 
 int isMoveValid(const struct game *jeu, struct coord c_avant, struct coord c_apres, int piece, struct coord *taken){
@@ -555,6 +567,9 @@ int undo_seq(struct game *jeu, struct move_seq *sequence){
 }
 
 int undo_moves(struct game *game, int n){
+	if(game == NULL){
+		return -1;
+	}
 	int i;
 	struct move *mouvement = game -> moves;
 	struct move_seq *current;
