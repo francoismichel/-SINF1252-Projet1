@@ -396,7 +396,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
 
 void push_seq(struct game *jeu, const struct move_seq *seq, struct coord *piece_taken, int old_orig, int piece_value){
 	if(seq == NULL){
-		printf("aucune sequence a rajouter dans push_seq"\n);
+		printf("aucune sequence a rajouter dans push_seq\n");
 		return;
 	}
 	if(jeu == NULL){
@@ -528,7 +528,7 @@ int apply_moves(struct game *game, const struct move *moves){
 		current = current -> next;
 		// Comme on change de move, ce n'est plus le même joueur qui joue, donc on réinitialise previousValid.
 		previousValid = 3;
-		if(!canPlay(game, color)){
+		if(!canPlay(game, ~(game -> cur_player) & 1)){
 			//On retourne 1 pour dire qu'il a perdu
 			return 1;
 		}
