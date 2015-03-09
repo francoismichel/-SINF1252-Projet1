@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "dames.h"
-#include "dames_intermediate.h"
 
 // Test de la fonction new_game
 void test_new_game(){
@@ -76,53 +75,302 @@ void test_load_game(){
 	// Pas de free_game(jeu_5), celui-ci vaut NULL
 }
 
-void test_getColor(){
-	int pionNoir = 0x1;
-	int pionBlanc = 0x5;
-	int dameNoir = 0x3;
-	int dameBlanc = 0x7;
-	int check_couleur = 1;
+void test_free_game(){
+	/*
+	 * Un seul test est fait ici, pour deux raisons :
+	 * - La fonction free_game est déjà testée à plusieurs reprises dans les autres fonctions de test
+	 * - free_game ne renvoie aucune valeur à tester
+	 */
+	struct game *jeu_1 = new_game(10, 10);
 	
-	check_couleur = getColor(pionNoir);
-	CU_ASSERT_EQUAL(check_couleur, 0);
-	check_couleur = getColor(pionBlanc);
-	CU_ASSERT_EQUAL(check_couleur, 1);
-	check_couleur = getColor(dameNoir);
-	CU_ASSERT_EQUAL(check_couleur, 0);
-	check_couleur = getColor(dameBlanc);
-	CU_ASSERT_EQUAL(check_couleur, 1);
+	free_game(jeu_1);
+	CU_PASS("Jeu libéré avec succès");
 }
 
-void test_isOutOfBoard(){
-	struct coord c_old = {7,6};
-	struct coord c_new = {8,5};
-	struct move_seq *seq1 = (struct move_seq *) malloc(sizeof(struct move_seq));
-	seq1->c_old = c_old;
-	seq1->c_new = c_new;
-	struct coord c_old_2 = {0,3};
-	struct coord c_new_2 = {-1,4};
-	struct move_seq *seq2 = (struct move_seq *) malloc(sizeof(struct move_seq));
-	seq1->c_old = c_old_2;
-	seq1->c_new = c_new_2;
-	struct coord c_old_3 = {4,9};
-	struct coord c_new_3 = {5,10};
-	struct move_seq *seq3 = (struct move_seq *) malloc(sizeof(struct move_seq));
-	seq1->c_old = c_old_3;
-	seq1->c_new = c_new_3;
-	int check_board = 0;
+void test_apply_moves(){
 	
-	check_board = isOutOfBoard(seq1);
-	CU_ASSERT_EQUAL(check_board, 1);
+	struct game *jeu_1 = new_game(10, 10);
 	
-	check_board = isOutOfBoard(seq2);
-	CU_ASSERT_EQUAL(check_board, 0);
+	struct move *m1 = (struct move *) malloc(sizeof(struct move));
+	if(m1 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move *m2 = (struct move *) malloc(sizeof(struct move));
+	if(m2 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move *m3 = (struct move *) malloc(sizeof(struct move));
+	if(m3 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move *m4 = (struct move *) malloc(sizeof(struct move));
+	if(m4 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move *m5 = (struct move *) malloc(sizeof(struct move));
+	if(m4 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
 	
-	check_board = isOutOfBoard(seq3);
-	CU_ASSERT_EQUAL(check_board, 0);
+	m1->next = NULL;
+	m2->next = NULL;
+	m3->next = NULL;
+	m4->next = NULL;
+	m5->next = NULL;
 	
+	struct move_seq *seq1 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq1 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move_seq *seq2 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq2 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move_seq *seq3 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq3 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move_seq *seq4 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq4 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move_seq *seq5 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq5 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	// Déplacement d'un pion blanc
+	struct coord old = {1,6};
+	struct coord new = {0,5};
+	seq1->next = NULL;
+	seq1->c_old = old;
+	seq1->c_new = new;
+	m1->seq = seq1;
+	
+	// Déplacement d'un pion noir
+	struct coord old_2 = {2,3};
+	struct coord new_2 = {1,4};
+	seq2->next = NULL;
+	seq2->c_old = old_2;
+	seq2->c_new = new_2;
+	m2->seq = seq2;
+	
+	// Capture d'un pion noir par les blancs
+	struct coord old_3 = {0,5};
+	struct coord new_3 = {2,3};
+	struct coord piece_taken_3 = {1,4};
+	seq3->next = NULL;
+	seq3->c_old = old_3;
+	seq3->c_new = new_3;
+	seq3->piece_value = 0x1;
+	seq3->piece_taken = piece_taken_3;
+	seq3->old_orig = 0x5;
+	m3->seq = seq3;
+	
+	// Capture d'un pion blanc par les noirs
+	struct coord old_4 = {1,2};
+	struct coord new_4 = {3,4};
+	struct coord piece_taken_4 = {2,3};
+	seq4->next = NULL;
+	seq4->c_old = old_4;
+	seq4->c_new = new_4;
+	seq4->piece_value = 0x5;
+	seq4->piece_taken = piece_taken_4;
+	seq4->old_orig = 0x1;
+	m4->seq = seq4;
+	
+	// Essayer d'avancer verticalement
+	struct coord old_5 = {7,6};
+	struct coord new_5 = {7,5};
+	seq5->next = NULL;
+	seq5->c_old = old_5;
+	seq5->c_new = new_5;
+	m5->seq = seq5;
+	
+	int m1_check = apply_moves(jeu_1, m1);
+	CU_ASSERT_EQUAL(m1_check, 0);
+	
+	int m2_check = apply_moves(jeu_1, m2);
+	CU_ASSERT_EQUAL(m2_check, 0);
+	
+	int m3_check = apply_moves(jeu_1, m3);
+	CU_ASSERT_EQUAL(m3_check, 0);
+	
+	int m4_check = apply_moves(jeu_1, m4);
+	CU_ASSERT_EQUAL(m4_check, 0);
+	
+	int m5_check = apply_moves(jeu_1, m5);
+	CU_ASSERT_EQUAL(m5_check, -1);
+	
+	free_game(jeu_1);
+}
+
+void test_is_move_seq_valid(){
+	struct game *jeu_1 = new_game(10, 10);
+	
+	// Déplacement simple, valide
+	struct move_seq *seq1 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq1 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	struct coord old = {5,6};
+	struct coord new = {4,5};
+	seq1->next = NULL;
+	seq1->c_old = old;
+	seq1->c_new = new;
+	
+	// Déplacement en dehors du plateau, invalide
+	struct move_seq *seq2 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq2 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	struct coord old_2 = {9,6};
+	struct coord new_2 = {10,5};
+	seq2->next = NULL;
+	seq2->c_old = old_2;
+	seq2->c_new = new_2;
+	
+	// Déplacement des noirs au premier tour, invalide
+	struct move_seq *seq3 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq3 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	struct coord old_3 = {4,3};
+	struct coord new_3 = {3,4};
+	seq3->next = NULL;
+	seq3->c_old = old_3;
+	seq3->c_new = new_3;
+	
+	int check_valid_1 = is_move_seq_valid(jeu_1, seq1, NULL, NULL);
+	CU_ASSERT_EQUAL(check_valid_1, 1);
+	
+	int check_valid_2 = is_move_seq_valid(jeu_1, seq2, NULL, NULL);
+	CU_ASSERT_EQUAL(check_valid_2, 0);
+	
+	int check_valid_3 = is_move_seq_valid(jeu_1, seq3, NULL, NULL);
+	CU_ASSERT_EQUAL(check_valid_3, 0);
+	
+	free_game(jeu_1);
 	free(seq1);
 	free(seq2);
 	free(seq3);
+}
+
+void test_undo_moves(){
+	struct game *jeu_1 = new_game(10, 10);
+	
+	struct move *m1 = (struct move *) malloc(sizeof(struct move));
+	if(m1 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move *m2 = (struct move *) malloc(sizeof(struct move));
+	if(m2 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move *m3 = (struct move *) malloc(sizeof(struct move));
+	if(m3 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move *m4 = (struct move *) malloc(sizeof(struct move));
+	if(m4 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	m1->next = NULL;
+	m2->next = NULL;
+	m3->next = NULL;
+	m4->next = NULL;
+	
+	struct move_seq *seq1 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq1 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move_seq *seq2 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq2 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move_seq *seq3 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq3 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move_seq *seq4 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq4 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	struct coord old = {3,6};
+	struct coord new = {4,5};
+	seq1->next = NULL;
+	seq1->c_old = old;
+	seq1->c_new = new;
+	m1->seq = seq1;
+	
+	struct coord old_2 = {6,3};
+	struct coord new_2 = {5,4};
+	seq2->next = NULL;
+	seq2->c_old = old_2;
+	seq2->c_new = new_2;
+	m2->seq = seq2;
+	
+	struct coord old_3 = {4,5};
+	struct coord new_3 = {6,3};
+	struct coord piece_taken_3 = {5,4};
+	seq3->next = NULL;
+	seq3->c_old = old_3;
+	seq3->c_new = new_3;
+	seq3->piece_value = 0x1;
+	seq3->piece_taken = piece_taken_3;
+	seq3->old_orig = 0x5;
+	m3->seq = seq3;
+	
+	struct coord old_4 = {5,2};
+	struct coord new_4 = {7,4};
+	struct coord piece_taken_4 = {6,3};
+	seq4->next = NULL;
+	seq4->c_old = old_4;
+	seq4->c_new = new_4;
+	seq4->piece_value = 0x5;
+	seq4->piece_taken = piece_taken_4;
+	seq4->old_orig = 0x1;
+	m4->seq = seq4;
+	
+	int m1_check = apply_moves(jeu_1, m1);
+	CU_ASSERT_EQUAL(m1_check, 0);
+	int m2_check = apply_moves(jeu_1, m2);
+	CU_ASSERT_EQUAL(m2_check, 0);
+	int m3_check = apply_moves(jeu_1, m3);
+	CU_ASSERT_EQUAL(m3_check, 0);
+	int m4_check = apply_moves(jeu_1, m4);
+	CU_ASSERT_EQUAL(m4_check, 0);
+	
+	// On retire un mouvement de trop, mais cela reste valide
+	/*int check_undo_1 = undo_moves(jeu_1, 5);
+	CU_ASSERT_EQUAL(check_undo_1, 0);*/
+	
+	free_game(jeu_1);
 }
 
 int main(int argc, char *argv[]){
@@ -144,8 +392,10 @@ int main(int argc, char *argv[]){
 	// Ajout de nos tests à notre suite de tests
 	if((NULL == CU_add_test(pSuite, "test de test_new_game()", test_new_game)) ||
 		(NULL == CU_add_test(pSuite, "test de test_load_game()", test_load_game)) ||
-		(NULL == CU_add_test(pSuite, "test de test_getColor()", test_getColor)) ||
-		(NULL == CU_add_test(pSuite, "test de test_isOutOfBoard()", test_isOutOfBoard))){
+		(NULL == CU_add_test(pSuite, "test de test_free_game()", test_free_game)) ||
+		(NULL == CU_add_test(pSuite, "test de test_apply_moves()", test_apply_moves)) ||
+		(NULL == CU_add_test(pSuite, "test de test_is_move_seq_valid()", test_is_move_seq_valid)) ||
+		(NULL == CU_add_test(pSuite, "test de test_undo_moves()", test_undo_moves))){
 		
 		CU_cleanup_registry();
 		return CU_get_error();
