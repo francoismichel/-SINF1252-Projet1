@@ -35,13 +35,13 @@ int isCoordInBoard(int x, int y);
  * Retourne 1 si le joueur actuel du jeu peut jouer
  * Retourne 0 sinon
  */
-int canPlay(const struct game *jeu);
+int canPlay(const struct game *jeu, int color);
 
 /*
  * Retourne 1 si la pièce située aux coordonnées x,y peut effectuer un mouvement au tour actuel
  * Retourne 0 sinon
  */
-int isValidMovePiece(const struct game *jeu, int x, int y);
+int isValidMovePiece(const struct game *jeu, int x, int y, int color);
 
 /*
  * Retourne la direction définie par les 2 coordonnée @c_avant et @c_apres
