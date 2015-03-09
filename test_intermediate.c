@@ -57,6 +57,70 @@ void test_isOutOfBoard(){
 	free(seq3);
 }
 
+void test_isDame(){
+	int pionNoir = 0x1;
+	int pionBlanc = 0x5;
+	int dameNoir = 0x3;
+	int dameBlanc = 0x7;
+	int caseVide = 0x0;
+	int check_dame = 2;
+	
+	check_dame = isDame(pionNoir);
+	CU_ASSERT_EQUAL(check_dame, 0);
+	check_dame = isDame(pionBlanc);
+	CU_ASSERT_EQUAL(check_dame, 0);
+	check_dame = isDame(dameNoir);
+	CU_ASSERT_EQUAL(check_dame, 1);
+	check_dame = isDame(dameBlanc);
+	CU_ASSERT_EQUAL(check_dame, 1);
+	check_dame = isDame(caseVide);
+	CU_ASSERT_EQUAL(check_dame, 0);
+}
+
+void test_isCoordInBoard(){
+	CU_ASSERT_EQUAL(isCoordInBoard(3,7), 1);
+	CU_ASSERT_EQUAL(isCoordInBoard(7,9), 1);
+	CU_ASSERT_EQUAL(isCoordInBoard(10,9), 0);
+	CU_ASSERT_EQUAL(isCoordInBoard(0,0), 1);
+	CU_ASSERT_EQUAL(isCoordInBoard(-1,5), 0);
+}
+
+void test_isValidMovePiece(){
+	struct game *jeu_1 = new_game(10, 10);
+	
+	CU_ASSERT_EQUAL(isValidMovePiece(jeu_1, 1, 6, PLAYER_WHITE), 1);
+	CU_ASSERT_EQUAL(isValidMovePiece(jeu_1, 0, 7, PLAYER_WHITE), 0);
+	CU_ASSERT_EQUAL(isValidMovePiece(jeu_1, 5, 2, PLAYER_BLACK), 0);
+	CU_ASSERT_EQUAL(isValidMovePiece(jeu_1, 0, 3, PLAYER_BLACK), 1);
+	
+	free_game(jeu_1);
+}
+
+void test_canPlay(){
+	struct game *jeu_1 = new_game(10, 10);
+	
+	CU_ASSERT_EQUAL(canPlay(jeu_1, PLAYER_WHITE), 1);
+	CU_ASSERT_EQUAL(canPlay(jeu_1, PLAYER_BLACK), 1);
+	
+	free_game(jeu_1);
+}
+
+void test_getDiagonal(){
+	struct coord c1 = {9,6};
+	struct coord c2 = {8,5};
+	struct coord c3 = {8,7};
+	struct coord c4 = {4,1};
+	
+	// Les quatres directions possibles
+	CU_ASSERT_EQUAL(getDiagonal(c1,c2), 1);
+	CU_ASSERT_EQUAL(getDiagonal(c2,c1), 4);
+	CU_ASSERT_EQUAL(getDiagonal(c1,c3), 3);
+	CU_ASSERT_EQUAL(getDiagonal(c3,c1), 2);
+	
+	// Longue diagonale
+	CU_ASSERT_EQUAL(getDiagonal(c1,c4), 1);
+}
+
 int main(int argc, char *argv[]){
 	
 	// Notre suite de tests
@@ -75,7 +139,12 @@ int main(int argc, char *argv[]){
 	}
 	// Ajout de nos tests à notre suite de tests
 	if((NULL == CU_add_test(pSuite, "test de test_getColor()", test_getColor)) ||
-		(NULL == CU_add_test(pSuite, "test de test_isOutOfBoard()", test_isOutOfBoard))){
+		(NULL == CU_add_test(pSuite, "test de test_isOutOfBoard()", test_isOutOfBoard)) ||
+		(NULL == CU_add_test(pSuite, "test de test_isDame()", test_isDame)) ||
+		(NULL == CU_add_test(pSuite, "test de test_isCoordInBoard()", test_isCoordInBoard)) ||
+		(NULL == CU_add_test(pSuite, "test de test_canPlay()", test_canPlay)) ||
+		(NULL == CU_add_test(pSuite, "test de test_isValidMovePiece()", test_isValidMovePiece)) ||
+		(NULL == CU_add_test(pSuite, "test de test_getDiagonal()", test_getDiagonal))){
 		
 		CU_cleanup_registry();
 		return CU_get_error();

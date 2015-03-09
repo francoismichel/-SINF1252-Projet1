@@ -20,7 +20,7 @@ int getColor(int piece);
 int isOutOfBoard(const struct move_seq *seq);
 
 /*
- * Retourne 0 si la pièce n'est pas une dame, !0 si c'en est une
+ * Retourne 0 si la pièce n'est pas une dame, 1 si ce n'est pas une dame
  * @piece est une pièce valide
  */
 int isDame(int piece);
@@ -32,20 +32,20 @@ int isDame(int piece);
 int isCoordInBoard(int x, int y);
 
 /*
- * Retourne 1 si le joueur actuel du jeu peut jouer
- * Retourne 0 sinon
- */
-int canPlay(const struct game *jeu, int color);
-
-/*
- * Retourne 1 si la pièce située aux coordonnées x,y peut effectuer un mouvement au tour actuel
+ * Retourne 1 si la pièce située aux coordonnées (x,y) peut effectuer un mouvement au tour actuel
  * Retourne 0 sinon
  */
 int isValidMovePiece(const struct game *jeu, int x, int y, int color);
 
 /*
- * Retourne la direction définie par les 2 coordonnée @c_avant et @c_apres
- * retourne 0 si les deux coordonnées ne décrivent pas une diagonale
+ * Retourne 1 si le joueur @color a la possibilité de jouer au moins une pièce
+ * Retourne 0 sinon
+ */
+int canPlay(const struct game *jeu, int color);
+
+/*
+ * Retourne la direction définie par les 2 coordonnées @c_avant et @c_apres
+ * Retourne 0 si les deux coordonnées ne décrivent pas une diagonale
  * @c_avant et @c_apres sont des coordonnées valides
  */
 int getDiagonal(struct coord c_avant, struct coord c_apres);

@@ -75,6 +75,7 @@ void test_load_game(){
 	// Pas de free_game(jeu_5), celui-ci vaut NULL
 }
 
+// Test de la fonction free_game
 void test_free_game(){
 	/*
 	 * Un seul test est fait ici, pour deux raisons :
@@ -87,6 +88,7 @@ void test_free_game(){
 	CU_PASS("Jeu libéré avec succès");
 }
 
+// Test de la fonction apply_moves
 void test_apply_moves(){
 	
 	struct game *jeu_1 = new_game(10, 10);
@@ -215,6 +217,7 @@ void test_apply_moves(){
 	free_game(jeu_1);
 }
 
+// Test de la fonction is_move_seq_valid
 void test_is_move_seq_valid(){
 	struct game *jeu_1 = new_game(10, 10);
 	
@@ -272,6 +275,7 @@ void test_is_move_seq_valid(){
 	free(seq3);
 }
 
+// Test de la fonction undo_moves
 void test_undo_moves(){
 	struct game *jeu_1 = new_game(10, 10);
 	
@@ -367,10 +371,29 @@ void test_undo_moves(){
 	CU_ASSERT_EQUAL(m4_check, 0);
 	
 	// On retire un mouvement de trop, mais cela reste valide
-	/*int check_undo_1 = undo_moves(jeu_1, 5);
-	CU_ASSERT_EQUAL(check_undo_1, 0);*/
+	int check_undo_1 = undo_moves(jeu_1, 5);
+	CU_ASSERT_EQUAL(check_undo_1, 0);
+	
+	// On ne peut pas retirer un nombre négatif de moves
+	int check_undo_2 = undo_moves(jeu_1, -1);
+	CU_ASSERT_EQUAL(check_undo_2, -1);
+	
+	// Retirer 0 moves est considéré comme une erreur
+	int check_undo_3 = undo_moves(jeu_1, 0);
+	CU_ASSERT_EQUAL(check_undo_3, -1);
 	
 	free_game(jeu_1);
+}
+
+void test_print_board(){
+	struct game *jeu_1 = new_game(10, 10);
+	
+	print_board(jeu_1);
+	CU_PASS("Plateau imprimé");
+	
+	// print_board(NULL);
+	// CU_PASS("Message d'erreur imprimé");
+	
 }
 
 int main(int argc, char *argv[]){
@@ -395,7 +418,8 @@ int main(int argc, char *argv[]){
 		(NULL == CU_add_test(pSuite, "test de test_free_game()", test_free_game)) ||
 		(NULL == CU_add_test(pSuite, "test de test_apply_moves()", test_apply_moves)) ||
 		(NULL == CU_add_test(pSuite, "test de test_is_move_seq_valid()", test_is_move_seq_valid)) ||
-		(NULL == CU_add_test(pSuite, "test de test_undo_moves()", test_undo_moves))){
+		(NULL == CU_add_test(pSuite, "test de test_undo_moves()", test_undo_moves)) ||
+		(NULL == CU_add_test(pSuite, "test de test_print_board()", test_print_board))){
 		
 		CU_cleanup_registry();
 		return CU_get_error();

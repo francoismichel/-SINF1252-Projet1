@@ -137,7 +137,7 @@ int isCoordInBoard(int x, int y){
 
 int isValidMovePiece(const struct game *jeu, int x, int y, int color){
 	int **plateau = jeu -> board;
-	int yMoveValue;	
+	int yMoveValue;
 	//Si la couleur de la piece qu'on verifie n'est pas la couleur du joueur actuel, on retourne 0 direct
 	if(getColor(plateau[x][y]) != color){
 		return 0;
@@ -166,26 +166,26 @@ int isValidMovePiece(const struct game *jeu, int x, int y, int color){
 	//S'il n'y a pas de case libre adjacente à la pièce
 	else{
 		//On regarde si on peut sauter au-dessus d'un pion, par l'avant EST
-		if(isCoordInBoard(x+2, y + 2*yMoveValue) && getColor(plateau[x+1][y + yMoveValue]) != jeu -> cur_player){
+		if(isCoordInBoard(x+2, y + 2*yMoveValue) && (getColor(plateau[x+1][y + yMoveValue]) != color)){
 			if(plateau[x+2][y + 2*yMoveValue] == 0x0){
 				return 1;
 			}
 		}
 		//Par l'avant OUEST
-		if(isCoordInBoard(x-2, y + 2*yMoveValue) && getColor(plateau[x-1][y + yMoveValue]) != jeu -> cur_player){
+		if(isCoordInBoard(x-2, y + 2*yMoveValue) && (getColor(plateau[x-1][y + yMoveValue]) != color)){
 			if(plateau[x-2][y + 2*yMoveValue] == 0x0){
 				return 1;
 			}
 		}
 		//Par l'arrière EST
-		if(isCoordInBoard(x+2, y - 2*yMoveValue) && plateau[x+1][y - yMoveValue] != 0x0){
-			if(getColor(plateau[x+1][y - yMoveValue]) != jeu -> cur_player && plateau[x+2][y + 2*yMoveValue] == 0x0){
+		if(isCoordInBoard(x+2, y - 2*yMoveValue) && (getColor(plateau[x+1][y - yMoveValue]) != color)){
+			if(plateau[x+2][y + 2*yMoveValue] == 0x0){
 				return 1;
 			}
 		}
 		//Par l'arrière OUEST
-		if(isCoordInBoard(x-2, y - 2*yMoveValue) && plateau[x-1][y - yMoveValue] != 0x0){
-			if(getColor(plateau[x-1][y - yMoveValue]) != jeu -> cur_player && plateau[x-2][y + 2*yMoveValue] == 0x0){
+		if(isCoordInBoard(x-2, y - 2*yMoveValue) && (getColor(plateau[x-1][y - yMoveValue]) != color)){
+			if(plateau[x-2][y + 2*yMoveValue] == 0x0){
 				return 1;
 			}
 		}
@@ -552,12 +552,14 @@ int apply_moves(struct game *game, const struct move *moves){
 		current = current -> next;
 		// Comme on change de move, ce n'est plus le même joueur qui joue, donc on réinitialise previousValid.
 		previousValid = 3;
-		if(!canPlay(game, ~(game -> cur_player) & 1)){
+		
+		// On inverse le joueur qui joue
+		game -> cur_player = ~(game -> cur_player) & 1;
+		// Peut-il encore jouer ?
+		if(!canPlay(game, game -> cur_player)){
 			//On retourne 1 pour dire qu'il a perdu
 			return 1;
 		}
-		// On inverse le joueur qui joue
-		game -> cur_player = ~(game -> cur_player) & 1;
 	}
 	return 0;
 }
