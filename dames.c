@@ -134,11 +134,11 @@ int isCoordInBoard(int x, int y){
 }
 
 
-int isValidMovePiece(const struct game *jeu, int x, int y){
+int isValidMovePiece(const struct game *jeu, int x, int y, int color){
 	int **plateau = jeu -> board;
 	int yMoveValue;	
 	//Si la couleur de la piece qu'on verifie n'est pas la couleur du joueur actuel, on retourne 0 direct
-	if(getColor(plateau[x][y]) != jeu -> cur_player){
+	if(getColor(plateau[x][y]) != color){
 		return 0;
 	}
 	//Si le joueur actuel est PLAYER_WHITE, il avance de base vers le haut (y diminue, donc yMoveValue = -1)
@@ -193,12 +193,12 @@ int isValidMovePiece(const struct game *jeu, int x, int y){
 	return 0;
 }
 
-int canPlay(const struct game *jeu){
+int canPlay(const struct game *jeu, int color){
 	int i,j;
 	for(i = 0 ; i < jeu -> xsize ; i++){
 		for(j = 0 ; j < jeu -> ysize ; j++){
 			//On verifie si la piece aux coordonnees i,j peut jouer actuellement
-			if(isValidMovePiece(jeu, i, j)){
+			if(isValidMovePiece(jeu, i, j, color)){
 				//Si la pièce peut effectuer un mouvement valide, on retourne 1
 				return 1;
 			}
@@ -528,12 +528,12 @@ int apply_moves(struct game *game, const struct move *moves){
 		current = current -> next;
 		// Comme on change de move, ce n'est plus le même joueur qui joue, donc on réinitialise previousValid.
 		previousValid = 3;
-		// On inverse le joueur qui joue
-		game -> cur_player = ~(game -> cur_player) & 1;
-		if(!canPlay(game)){
+		if(!canPlay(game, color)){
 			//On retourne 1 pour dire qu'il a perdu
 			return 1;
 		}
+		// On inverse le joueur qui joue
+		game -> cur_player = ~(game -> cur_player) & 1;
 	}
 	return 0;
 }
