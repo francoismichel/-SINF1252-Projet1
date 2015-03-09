@@ -104,11 +104,6 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
 	return jeu;										  
 }
 
-/*
- * retourne la couleur de la piece en argument (PLAYER_WHITE ou PLAYER_BLACK)
- * retourne 2 si la case est une case vide
- * lance une erreur si la pièce n'est pas valide
- */
 int getColor(int piece){
 	if(piece == 0x0){
 		return 2;
@@ -120,10 +115,6 @@ int getColor(int piece){
 	return ((piece & 0x4) >> 2) & 1; 
 }
 
-/*
- * retourne 1 si la séquence démarre ou atterit hors du tableau
- * retourne 0 sinon
- */
 int isOutOfBoard(const struct move_seq *seq){
 	struct coord c_avant = seq -> c_old;
 	struct coord c_apres = seq -> c_new;
@@ -133,27 +124,16 @@ int isOutOfBoard(const struct move_seq *seq){
 	else return 1;
 }
 
-/*
- * retourne 0 si la pièce n'est pas une dame, !0 si c'en est une
- * @piece est une pièce valide
- */
 int isDame(int piece){
  	return (piece & 0x2) == 0x2;
 }
 
-/*
- * Retourne 1 si plateau[x][y] existe
- * Retourne 0 sinon
- */
+
 int isCoordInBoard(int x, int y){
 	return x < 10 && x >= 0 && y < 10 && y >= 0;
 }
 
 
-/*
- * Retourne 1 si la pièce située aux coordonnées x,y peut effectuer un mouvement au tour actuel
- * Retourne 0 sinon
- */
 int isValidMovePiece(const struct game *jeu, int x, int y){
 	int **plateau = jeu -> board;
 	int yMoveValue;	
@@ -212,10 +192,7 @@ int isValidMovePiece(const struct game *jeu, int x, int y){
 	//Si aucun des tests n'a réussi, c'est qu'il n'y a aucun mouvement valide pour cette pièce.
 	return 0;
 }
-/*
- * Retourne 1 si le joueur actuel du jeu peut jouer
- * Retourne 0 sinon
- */
+
 int canPlay(const struct game *jeu){
 	int i,j;
 	for(i = 0 ; i < jeu -> xsize ; i++){
@@ -231,11 +208,6 @@ int canPlay(const struct game *jeu){
 	return 0;
 }
 
-/*
- * Retourne la diagonale entre les deux coordonnées données en argument. {NORDEST, NORDOUEST, SUDEST, SUDOUEST}
- * c_avant & c_apres != NULL
- * retourne 0 si les deux coordonnées ne décrivent pas une diagonale
- */
 int getDiagonal(struct coord c_avant, struct coord c_apres){
 	if(c_apres.x - c_avant.x > 0 && c_apres.y - c_avant.y > 0){
 		return SUDEST;
@@ -254,11 +226,6 @@ int getDiagonal(struct coord c_avant, struct coord c_apres){
 	}
 }
 
-/*
- * Retourne 1 si la prise de la piece aux coordonnees "prise" est valide.
- * Retourne 0 sinon
- * jeu, prise, c_avant, c_apres != NULL
- */
 int pieceBienPrise(const struct game *jeu, struct coord *prise, struct coord c_avant, struct coord c_apres){
 	int piecePrise = (jeu -> board)[prise -> x][prise -> y];
 	int pieceQuiJoue = (jeu -> board)[c_avant.x][c_avant.y];
@@ -274,10 +241,6 @@ int pieceBienPrise(const struct game *jeu, struct coord *prise, struct coord c_a
 	}
 }
 
-/*
- * Si les coordonnées c_avant et c_apres forment une diagonale, retourne la longueur de cette diagonale.
- * Retourne 0 si elles ne forment pas une diagonale
- */
 int isDiagonal(struct coord c_avant, struct coord c_apres){
 	int valAbs = abs(c_apres.x - c_avant.x);
 	if(valAbs == abs(c_apres.y - c_avant.y)){
@@ -288,10 +251,6 @@ int isDiagonal(struct coord c_avant, struct coord c_apres){
 	}
 }
 
-/*
- * Retourne 0 si le déplacement du pion de @c_avant à @c_apres est correct.
- * Retourne 1 sinon
- */
 int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken){
 	int valeurMove = isDiagonal(c_avant, c_apres);
 	if(valeurMove == 0 || valeurMove > 2){
@@ -350,10 +309,6 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 	}
 }
 
-/*
- * Retourne 1 si le mouvement est correct pour une dame
- * Retourne 0 sinon
- */
 int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken){
 	int valeurMove = isDiagonal(c_avant, c_apres);
 	//Si la dame ne bouge pas en diagonale
@@ -399,10 +354,7 @@ int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord
 	}
 	return 1; //Si on a passé tous les test, la séquence est valide, on retourne 1
 }
-/*
- * Retourne 1 si le déplacement de c_avant à c_apres est correct.
- * Retourne 0 sinon
- */
+
 int isMoveValid(const struct game *jeu, struct coord c_avant, struct coord c_apres, int piece, struct coord *taken){
 	// On vérifie si la pièce atterit sur une case vide
 	if((jeu -> board)[c_apres.x][c_apres.y] != 0){
@@ -442,10 +394,6 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
 	return isMoveValid(game, c_avant, c_apres, pieceQuiJoue, taken);
 }
 
-/*
- * Rajoute la séquence seq dans la pile moves de game, si seq est non nulle.
- * 
- */
 void push_seq(struct game *jeu, const struct move_seq *seq, struct coord *piece_taken, int old_orig, int piece_value){
 	if(seq == NULL){
 		printf("aucune sequence a rajouter dans push_seq"\n);
@@ -472,10 +420,6 @@ void push_seq(struct game *jeu, const struct move_seq *seq, struct coord *piece_
 	(jeu -> moves) -> seq = newSeq;
 }
 
-/*
- * Transforme la pièce aux coordonnées c en dame si ce n'en est pas une. Renvoie 1 si la pièce a été transformée en dame
- * Renvoie 0 sinon.
- */
 int transformDame(struct game *jeu, struct coord c){
 	int piece = (jeu -> board)[c.x][c.y];
 	if(!isDame(piece)){
