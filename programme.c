@@ -107,7 +107,7 @@ int isCorrectInput(char *input){
         for(i = 0 ; i < longueur ; i++){	//Pour tous les caracteres du premier pattern
             if(input[j] != chaine[i] && i != 1 && i != 10 && i != 3 && i != 12){	//Si input ne correspond pas au pattern
 																					//(excepté à l'endroit de x et y)
-				printf("erreur1 : %c\n", input[j]);				//Il y a une erreur, on l'affiche
+				printf("erreur de caractère : %c\n", input[j]);				//Il y a une erreur, on l'affiche
                 return -1;										//On le fait remarquer en retournant -1
             }
             if(i == 3){											//Si on est à la place du premier y
@@ -129,13 +129,13 @@ int isCorrectInput(char *input){
             return 0;			//On retourne 0
         }
         else if(input[j] != ' '){	//Si le pattern n'est pas respecté
-			printf("erreur2 : %c\n", input[j]);	//On affiche une erreur
+			printf("erreur de caractère : %c\n", input[j]);	//On affiche une erreur
             return -1;
         }
         j++;
         for(i = 1 ; i < longueurPattern ; i++){	//On vérifie le respect du pattern
             if(input[j] != pattern[i]){			//S'il n'est pas respecté
-				printf("erreur3 : %c\n", input[j]);	//On affiche une erreur
+				printf("erreur de caractère : %c\n", input[j]);	//On affiche une erreur
                 return -1;
             }
             j++;
@@ -208,8 +208,4 @@ int main(int argc, char *argv[]){
 	}
     return EXIT_SUCCESS;
 }
-
-
-
-
 
