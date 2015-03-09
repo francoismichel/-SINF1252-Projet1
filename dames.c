@@ -567,16 +567,22 @@ int undo_seq(struct game *jeu, struct move_seq *sequence){
 }
 
 int undo_moves(struct game *game, int n){
-	if(game == NULL){
+	if(game == NULL || n <= 0){
 		return -1;
 	}
 	int i;
 	struct move *mouvement = game -> moves;
+	if(mouvement == NULL){
+		return -1;
+	}
 	struct move_seq *current;
 	for(i = 0 ; i < n && mouvement != NULL ; i++){
 		mouvement = pop_move(game);
 		printf("%d\n",i);
 		current = mouvement -> seq;
+		if(current == NULL){
+			return -1;
+		}
 		while(current != NULL){
 			undo_seq(game, current);
 			mouvement -> seq = (mouvement -> seq) -> next;
