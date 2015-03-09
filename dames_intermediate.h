@@ -51,12 +51,12 @@ int canPlay(const struct game *jeu, int color);
 int getDiagonal(struct coord c_avant, struct coord c_apres);
 
 /*
- * Retourne 0 si la prise de la pièce n'est pas valide, retourne !0 si elle l'est
+ * Retourne 0 si la prise de la pièce n'est pas valide, retourne 1 si elle l'est
  * On considère que la prise est valide si :
  * - la pièce qui prend et la pièce prise sont de couleurs différentes
  * - la pièce qui prend a sauté au-dessus de la pièce prise :
  * 		cela signifie que les coordonnées de la pièce prise sont les moyennes des coordonnées de la pièce qui joue,
- *		avant et après avoir joué, si la piece qui joue est un pion.
+ *		avant et après avoir joué, si la pièce qui joue est un pion.
  * @piece est une pièce valide
  */
 int pieceBienPrise(const struct game *jeu, struct coord *prise, struct coord c_avant, struct coord c_apres);

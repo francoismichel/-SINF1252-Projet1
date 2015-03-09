@@ -121,6 +121,124 @@ void test_getDiagonal(){
 	CU_ASSERT_EQUAL(getDiagonal(c1,c4), 1);
 }
 
+void test_pieceBienPrise(){
+	struct game *jeu_1 = new_game(10, 10);
+	
+	struct move *m1 = (struct move *) malloc(sizeof(struct move));
+	if(m1 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move *m2 = (struct move *) malloc(sizeof(struct move));
+	if(m2 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move *m3 = (struct move *) malloc(sizeof(struct move));
+	if(m3 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move *m4 = (struct move *) malloc(sizeof(struct move));
+	if(m4 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	m1->next = NULL;
+	m2->next = NULL;
+	m3->next = NULL;
+	m4->next = NULL;
+	
+	struct move_seq *seq1 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq1 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move_seq *seq2 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq2 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move_seq *seq3 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq3 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	struct move_seq *seq4 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq4 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	struct coord old = {5,6};
+	struct coord new = {6,5};
+	seq1->next = NULL;
+	seq1->c_old = old;
+	seq1->c_new = new;
+	m1->seq = seq1;
+	
+	struct coord old_2 = {8,3};
+	struct coord new_2 = {7,4};
+	seq2->next = NULL;
+	seq2->c_old = old_2;
+	seq2->c_new = new_2;
+	m2->seq = seq2;
+	 
+	struct coord old_3 = {6,5};
+	struct coord new_3 = {8,3};
+	struct coord piece_taken_3 = {7,4};	
+	seq3->next = NULL;
+	seq3->c_old = old_3;
+	seq3->c_new = new_3;
+	seq3->piece_value = 0x1;
+	seq3->piece_taken = piece_taken_3;
+	seq3->old_orig = 0x5;
+	m3->seq = seq3;
+	
+	struct coord old_4 = {9,2};
+	struct coord new_4 = {7,4};
+	struct coord piece_taken_4 = {8,3};
+	seq4->next = NULL;
+	seq4->c_old = old_4;
+	seq4->c_new = new_4;
+	seq4->piece_value = 0x5;
+	seq4->piece_taken = piece_taken_4;
+	seq4->old_orig = 0x1;
+	m4->seq = seq4;
+	
+	int m1_check = apply_moves(jeu_1, m1);
+	CU_ASSERT_EQUAL(m1_check, 0);
+	int m2_check = apply_moves(jeu_1, m2);
+	CU_ASSERT_EQUAL(m2_check, 0);
+	
+	CU_ASSERT_EQUAL(pieceBienPrise(jeu_1, &piece_taken_3, old_3, new_3), 1);
+	
+	int m3_check = apply_moves(jeu_1, m3);
+	CU_ASSERT_EQUAL(m3_check, 0);
+	
+	CU_ASSERT_EQUAL(pieceBienPrise(jeu_1, &piece_taken_4, old_4, new_4), 1);
+	
+	int m4_check = apply_moves(jeu_1, m4);
+	CU_ASSERT_EQUAL(m4_check, 0);
+	
+	free_game(jeu_1);
+}
+
+void test_isDiagonal(){
+	struct coord c1 = {1,8};
+	struct coord c2 = {6,3};
+	struct coord c3 = {9,0};
+	struct coord c4 = {1,3};
+	
+	// Diagonales valides
+	CU_ASSERT_EQUAL(isDiagonal(c1,c2), 5);
+	CU_ASSERT_EQUAL(isDiagonal(c1,c3), 8);
+	CU_ASSERT_EQUAL(isDiagonal(c3,c2), 3);
+	
+	// Diagonale non valide
+	CU_ASSERT_EQUAL(getDiagonal(c1,c4), 0);
+}
+
 int main(int argc, char *argv[]){
 	
 	// Notre suite de tests
@@ -144,7 +262,9 @@ int main(int argc, char *argv[]){
 		(NULL == CU_add_test(pSuite, "test de test_isCoordInBoard()", test_isCoordInBoard)) ||
 		(NULL == CU_add_test(pSuite, "test de test_canPlay()", test_canPlay)) ||
 		(NULL == CU_add_test(pSuite, "test de test_isValidMovePiece()", test_isValidMovePiece)) ||
-		(NULL == CU_add_test(pSuite, "test de test_getDiagonal()", test_getDiagonal))){
+		(NULL == CU_add_test(pSuite, "test de test_getDiagonal()", test_getDiagonal)) ||
+		(NULL == CU_add_test(pSuite, "test de test_pieceBienPrise()", test_pieceBienPrise)) ||
+		(NULL == CU_add_test(pSuite, "test de test_isDiagonal()", test_isDiagonal))){
 		
 		CU_cleanup_registry();
 		return CU_get_error();

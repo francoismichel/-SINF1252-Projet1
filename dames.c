@@ -230,13 +230,12 @@ int getDiagonal(struct coord c_avant, struct coord c_apres){
 int pieceBienPrise(const struct game *jeu, struct coord *prise, struct coord c_avant, struct coord c_apres){
 	int piecePrise = (jeu -> board)[prise -> x][prise -> y];
 	int pieceQuiJoue = (jeu -> board)[c_avant.x][c_avant.y];
-	
 	// On vérifie que la pièce qui joue et la pièce prise sont de couleurs différentes
 	if((getColor(piecePrise) ^ getColor(pieceQuiJoue)) == 0x1){
 		// On vérifie que la pièce qui joue a bien sauté au-dessus de la pièce prise :
 		return ( (c_avant.x + c_apres.x)/2 == prise -> x ) && ( (c_avant.y + c_apres.y)/2 == prise -> y ); 
 	}
-	// Sinon, la prise de piece n'est pas valide
+	// Sinon, la prise de pièce n'est pas valide
 	else{
 		return 0;
 	}
@@ -264,7 +263,8 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 		int diagonale = getDiagonal(c_avant, c_apres);
 		if(diagonale == SUDEST){
 			piecePrise = (jeu -> board)[c_avant.x + 1][c_avant.y + 1];
-			if(piecePrise == 0x0){
+			// Vérifions que la pièce prise n'est ni une case vide, ni un pion de sa propre couleur
+			if(piecePrise == 0x0 || getColor(piecePrise) == jeu -> cur_player){
 				return 0;
 			}
 			taken -> x = c_avant.x + 1;
@@ -272,7 +272,7 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 		}
 		else if(diagonale == SUDOUEST){
 			piecePrise = (jeu -> board)[c_avant.x - 1][c_avant.y + 1];
-			if(piecePrise == 0x0){
+			if(piecePrise == 0x0 || getColor(piecePrise) == jeu -> cur_player){
 				return 0;
 			}
 			taken -> x = c_avant.x - 1;
@@ -280,7 +280,7 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 		}
 		else if(diagonale == NORDEST){
 			piecePrise = (jeu -> board)[c_avant.x + 1][c_avant.y - 1];
-			if(piecePrise == 0x0){
+			if(piecePrise == 0x0 || getColor(piecePrise) == jeu -> cur_player){
 				return 0;
 			}
 			taken -> x = c_avant.x + 1;
@@ -288,7 +288,7 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 		}
 		else{
 			piecePrise = (jeu -> board)[c_avant.x - 1][c_avant.y - 1];
-			if(piecePrise == 0x0){
+			if(piecePrise == 0x0 || getColor(piecePrise) == jeu -> cur_player){
 				return 0;
 			}
 			taken -> x = c_avant.x - 1;
@@ -516,6 +516,7 @@ int apply_moves(struct game *game, const struct move *moves){
 			isValid = is_move_seq_valid(game, sequence, previousSeq, taken);
 			// Si la séquence n'est pas valide, le move n'est pas valide
 			if(isValid == 0){
+				undo_moves(game, 1);
 				return -1;
 			}
 			else if(isValid == 1){
