@@ -344,7 +344,30 @@ int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord
 			//Si on ne l'a jamais fait
 			if(prise == 0){
 				//On dit qu'on a pris un pion
-				prise = 1;
+				if(diagonale == SUDEST){	
+					position = (jeu -> board)[c_avant.x + i][c_avant.y + i];
+					taken -> x = c_avant.x + i;
+					taken -> y = c_avant.y + i;
+					prise = 1;
+				}
+				else if(diagonale == SUDOUEST){
+					position = (jeu -> board)[c_avant.x - i][c_avant.y + i];
+					taken -> x = c_avant.x - i;
+					taken -> y = c_avant.y + i;
+					prise = 1;
+				}
+				else if(diagonale == NORDEST){
+					position = (jeu -> board)[c_avant.x + i][c_avant.y - i];
+					taken -> x = c_avant.x + i;
+					taken -> y = c_avant.y - i;
+					prise = 1;
+				}
+				else{
+					position = (jeu -> board)[c_avant.x - i][c_avant.y - i];
+					taken -> x = c_avant.x - i;
+					taken -> y = c_avant.y - i;
+					prise = 1;
+				}
 			}
 			//Si on l'a déjà fait lors de la même séquence
 			else{
