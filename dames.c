@@ -316,7 +316,6 @@ int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord
 	if(valeurMove == 0){
 		return 0;
 	}
-	
 	int diagonale = getDiagonal(c_avant, c_apres);
 	int prise = 0;
 	int i;
@@ -376,6 +375,7 @@ int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord
 			}
 		}
 	}
+	if(prise == 1) return 2;
 	return 1; //Si on a passé tous les test, la séquence est valide, on retourne 1
 }
 
@@ -401,7 +401,6 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
 	}
 	struct coord c_avant = seq -> c_old;
 	struct coord c_apres = seq -> c_new;
-	
 	// On récupère la valeur de la pièce qui joue.
 	int pieceQuiJoue = (game -> board)[c_avant.x][c_avant.y];
 	
@@ -414,7 +413,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
 	// Si la pièce avant ou après le mouvement se trouve en dehors du tableau, c'est invalide
 	if(isOutOfBoard(seq)){
 		return 0;
-	}	
+	}
 	return isMoveValid(game, c_avant, c_apres, pieceQuiJoue, taken);
 }
 
@@ -520,6 +519,7 @@ int apply_moves(struct game *game, const struct move *moves){
 				return -1;
 			}
 			else if(isValid == 1){
+				printf("Flag5\n");
 				c_avant = sequence -> c_old;
 				c_apres = sequence -> c_new;
 				playerPiece = (game -> board)[c_avant.x][c_avant.y];
@@ -528,6 +528,7 @@ int apply_moves(struct game *game, const struct move *moves){
 				(game -> board)[c_avant.x][c_avant.y] = 0x0;
 			}
 			else{
+				printf("Flag6\n");
 				c_avant = sequence -> c_old;
 				c_apres = sequence -> c_new;
 				playerPiece = (game -> board)[c_avant.x][c_avant.y];
@@ -553,7 +554,6 @@ int apply_moves(struct game *game, const struct move *moves){
 		current = current -> next;
 		// Comme on change de move, ce n'est plus le même joueur qui joue, donc on réinitialise previousValid.
 		previousValid = 3;
-		
 		// On inverse le joueur qui joue
 		game -> cur_player = ~(game -> cur_player) & 1;
 		// Peut-il encore jouer ?

@@ -169,7 +169,7 @@ void test_pieceBienPrise(){
 		printf("Erreur d'allocation de mémoire\n");
 		exit(EXIT_FAILURE);
 	}
-	
+	print_board(jeu_1);
 	struct coord old = {5,6};
 	struct coord new = {6,5};
 	seq1->next = NULL;
@@ -210,14 +210,14 @@ void test_pieceBienPrise(){
 	CU_ASSERT_EQUAL(m1_check, 0);
 	int m2_check = apply_moves(jeu_1, m2);
 	CU_ASSERT_EQUAL(m2_check, 0);
-	
+
 	CU_ASSERT_EQUAL(pieceBienPrise(jeu_1, &piece_taken_3, old_3, new_3), 1);
 	
 	int m3_check = apply_moves(jeu_1, m3);
 	CU_ASSERT_EQUAL(m3_check, 0);
 	
 	CU_ASSERT_EQUAL(pieceBienPrise(jeu_1, &piece_taken_4, old_4, new_4), 1);
-	
+
 	int m4_check = apply_moves(jeu_1, m4);
 	CU_ASSERT_EQUAL(m4_check, 0);
 	
@@ -237,6 +237,81 @@ void test_isDiagonal(){
 	
 	// Diagonale non valide
 	CU_ASSERT_EQUAL(getDiagonal(c1,c4), 0);
+}
+
+void test_isCorrectMovePion(){
+	return;
+}
+
+void test_isCorrectMoveDame(){
+
+	struct game *jeu = new_game(10, 10);
+	int i;
+	jeu -> board  = (int **) malloc(10*sizeof(int *));
+	if ((jeu->board) == NULL){ // Si le malloc a échoué
+		printf("Mémoire insuffisante pour créer le plateau de jeu.\n");
+		exit(EXIT_FAILURE);
+	}
+	for(i = 0 ; i < 10 ; i++){
+		// On alloue de la mémoire pour le plateau de jeu.
+		*((jeu -> board) + i) = (int *) malloc(10*sizeof(int));
+		if((jeu -> board) + i == NULL){ // Si le malloc a échoué
+			printf("Mémoire insuffisante pour créer le plateau de jeu.\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+	jeu -> moves = NULL;
+	jeu -> xsize = 10;
+	jeu -> ysize = 10;
+	jeu -> cur_player = PLAYER_WHITE;
+	int j;
+	for(i = 0 ; i < 10 ; i++){
+		for(j = 0 ; j < 10 ; j++){
+			if( ( (j % 2 == 0) && (i % 2 == 0) ) || ( (j % 2 != 0) && (i % 2 != 0) ) ){
+				// *(*((jeu -> board) + j) + i) = 0x0;
+				(jeu -> board)[i][j] = 0x0;
+			}
+			else{
+				if(j < 4 && j > 2){
+					*(*((jeu -> board) + i) + j) = 0x1;
+				} else if (j < 6 && j > 4){
+					*(*((jeu -> board) + i) + j) = 0x7;
+				} else {
+					*(*((jeu -> board) + i) + j) = 0x0;
+				}
+			}
+		}	
+	}
+	
+	struct move *m1 = (struct move *) malloc(sizeof(struct move));
+	if(m1 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	m1->next = NULL;
+	struct move_seq *seq1 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq1 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	print_board(jeu);
+	
+	struct coord old = {2,5};
+	struct coord new = {5,2};
+	struct coord piece_taken = {4,3};
+	seq1->next = NULL;
+	seq1->c_old = old;
+	seq1->c_new = new;
+	seq1->piece_value = 0x1;
+	seq1->piece_taken = piece_taken;
+	seq1->old_orig = 0x7;
+	m1->seq = seq1;
+	
+	int check_move = apply_moves(jeu, m1);
+	CU_ASSERT_EQUAL(check_move, 0);
+	print_board(jeu);
+	
+	free_game(jeu);
 }
 
 int main(int argc, char *argv[]){
@@ -264,7 +339,9 @@ int main(int argc, char *argv[]){
 		(NULL == CU_add_test(pSuite, "test de test_isValidMovePiece()", test_isValidMovePiece)) ||
 		(NULL == CU_add_test(pSuite, "test de test_getDiagonal()", test_getDiagonal)) ||
 		(NULL == CU_add_test(pSuite, "test de test_pieceBienPrise()", test_pieceBienPrise)) ||
-		(NULL == CU_add_test(pSuite, "test de test_isDiagonal()", test_isDiagonal))){
+		(NULL == CU_add_test(pSuite, "test de test_isDiagonal()", test_isDiagonal)) ||
+		(NULL == CU_add_test(pSuite, "test de test_isCorrectMovePion()", test_isCorrectMovePion)) ||
+		(NULL == CU_add_test(pSuite, "test de test_isCorrectMoveDame()", test_isCorrectMoveDame))){
 		
 		CU_cleanup_registry();
 		return CU_get_error();

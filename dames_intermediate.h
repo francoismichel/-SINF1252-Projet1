@@ -69,14 +69,14 @@ int pieceBienPrise(const struct game *jeu, struct coord *prise, struct coord c_a
 int isDiagonal(struct coord c_avant, struct coord c_apres);
 
 /*
- * Retourne 0 si le déplacement du pion de @c_avant à @c_apres est correct.
- * Retourne 1 sinon
+ * Retourne 1 si le déplacement du pion de @c_avant à @c_apres est correct.
+ * Retourne 0 sinon !!!!!
  */
 int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken);
 
 /*
  * Retourne 0 si le déplacement de la dame de @c_avant à @c_apres est correct.
- * Retourne 1 sinon
+ * Retourne 1 sinon ç!!!!!!!
  */
 int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken);
 
