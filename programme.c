@@ -162,9 +162,11 @@ int main(int argc, char *argv[]){
 	int jouer = 0;
 	struct move mouvement;
 	int n = 0;
+	int undo = 0;
+	int apply = 0;
 	while(jouer != -1){
     	print_board(jeu);
-    	printf("Quel pion deplacer ? ('(x1,y1) to (x2,y2) , (x3,y3) to ...')\n");
+    	printf("Quel pion déplacer ? ('(x1,y1) to (x2,y2) , (x3,y3) to ...')\n");
 		printf("taper 'exit' pour quitter le jeu\n");
 		printf("taper 'undo n' pour annuler n mouvements de joueurs\n");
 		n = getSequence(input);
@@ -174,11 +176,30 @@ int main(int argc, char *argv[]){
 		else if(n == 0){
 			mouvement.next = NULL;
 			mouvement.seq = head;
-			apply_moves(jeu, &mouvement);
+			apply = apply_moves(jeu, &mouvement);
 			free_queue();
+			if(apply == 1){
+				if(jeu -> cur_player == PLAYER_WHITE){
+					printf("Les blancs ont gagné !\n");
+				}	
+				else if(jeu -> cur_player == PLAYER_BLACK){
+					printf("Les noirs ont gagné !\n");
+				}
+				else{
+					printf("On sait pas qui a gagné !\n");
+				}
+			}
+			else if(apply == -1){
+				printf("Impossible d'appliquer ce mouvement : mouvement invalide.\n");
+			}
 		}
 		else{
-			undo_moves(jeu, n);
+			
+			undo = undo_moves(jeu, n);
+			if(undo != 0){
+				printf("Impossible d'annuler ces mouvements...\n");
+				undo = 0;
+			}
 		}
 	}
     return EXIT_SUCCESS;
