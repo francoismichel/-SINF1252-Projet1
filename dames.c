@@ -89,16 +89,20 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
 			exit(EXIT_FAILURE);
 		}
 	}
+	// On recopie le tableau passé en arguments pour le mettre dans le tableau du jeu
 	for(i = 0 ; i < xsize ; i++){
 		for(j = 0 ; j < ysize ; j++){
 			(jeu->board)[i][j] = *(*((board) + i) + j);
+			// On incrémente les variables globales de compteurs de pions quand nécessaire
 			if(getColor((jeu->board)[i][j]) == PLAYER_BLACK){
 				nPieces[PLAYER_BLACK]++;
 			}
 			else if(getColor((jeu->board)[i][j]) == PLAYER_WHITE){
 				nPieces[PLAYER_WHITE]++;
 			}
+			
 		}
+			printf("hey1\n");
 	}
 	
 	jeu -> cur_player = cur_player;
@@ -114,12 +118,14 @@ int getColor(int piece){
 		printf("Pièce non valide, impossible de récupérer la couleur");
 		exit(EXIT_FAILURE);
 	}
+	// On récupère le bit de couleur
 	return ((piece & 0x4) >> 2) & 1; 
 }
 
 int isOutOfBoard(const struct move_seq *seq){
 	struct coord c_avant = seq -> c_old;
 	struct coord c_apres = seq -> c_new;
+	// On vérifie si les coordonnées sont en dehorsdu tableau ou non
 	if (((c_avant.x >= 0) && (c_avant.x < 10) && (c_avant.y) >= 0 && (c_avant.y < 10)
 		&& (c_apres.x >= 0) && (c_apres.x < 10) && (c_apres.y) >= 0 && (c_apres.y) < 10) == 1)
 		return 0;
