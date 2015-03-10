@@ -265,10 +265,10 @@ void test_isCorrectMoveDame(){
 	jeu -> ysize = 10;
 	jeu -> cur_player = PLAYER_WHITE;
 	int j;
+	// On créé un jeu spécial, avec une ligne de dames blanches, et une ligne de pions noirs
 	for(i = 0 ; i < 10 ; i++){
 		for(j = 0 ; j < 10 ; j++){
 			if( ( (j % 2 == 0) && (i % 2 == 0) ) || ( (j % 2 != 0) && (i % 2 != 0) ) ){
-				// *(*((jeu -> board) + j) + i) = 0x0;
 				(jeu -> board)[i][j] = 0x0;
 			}
 			else{
@@ -294,7 +294,6 @@ void test_isCorrectMoveDame(){
 		printf("Erreur d'allocation de mémoire\n");
 		exit(EXIT_FAILURE);
 	}
-	print_board(jeu);
 	
 	struct coord old = {2,5};
 	struct coord new = {5,2};
@@ -307,9 +306,26 @@ void test_isCorrectMoveDame(){
 	seq1->old_orig = 0x7;
 	m1->seq = seq1;
 	
+	CU_ASSERT_EQUAL(isCorrectMoveDame(jeu, old, new, &piece_taken), 2);
+	
 	int check_move = apply_moves(jeu, m1);
 	CU_ASSERT_EQUAL(check_move, 0);
-	print_board(jeu);
+	
+	struct coord old_2 = {8,5};
+	struct coord new_2 = {5,8};
+	
+	CU_ASSERT_EQUAL(isCorrectMoveDame(jeu, old_2, new_2, NULL), 1);
+	
+	// SegFault
+	/*struct coord old_3 = {0,5};
+	struct coord new_3 = {2,3};
+	
+	CU_ASSERT_EQUAL(isCorrectMoveDame(jeu, old_3, new_3, NULL), 0);*/
+	
+	struct coord old_4 = {4,5};
+	struct coord new_4 = {4,0};
+	
+	CU_ASSERT_EQUAL(isCorrectMoveDame(jeu, old_4, new_4, NULL), 0);
 	
 	free_game(jeu);
 }

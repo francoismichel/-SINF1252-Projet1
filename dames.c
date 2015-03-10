@@ -294,17 +294,20 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 			taken -> x = c_avant.x - 1;
 			taken -> y = c_avant.y - 1;
 		}
+		// Déplacement valide avec capture de pièce
 		return 2;
 	}
 	int piece = (jeu -> board)[c_avant.x][c_avant.y];
 	
 	// Si la pièce est un pion blanc, on regarde si son mouvement est correct (mouvement en diagonale)
 	if(getColor(piece) == PLAYER_WHITE){
-	return (c_apres.x - c_avant.x == -valeurMove && c_apres.y - c_avant.y == -valeurMove) ||
-		   (c_apres.x - c_avant.x == valeurMove && c_apres.y - c_avant.y == -valeurMove);
+		// Déplacement correct : on retourne 1
+		return (c_apres.x - c_avant.x == -valeurMove && c_apres.y - c_avant.y == -valeurMove) ||
+			(c_apres.x - c_avant.x == valeurMove && c_apres.y - c_avant.y == -valeurMove);
 	}
 	// Si c'est un pion noir, même chose, sauf que le sens de déplacement a changé	
 	else{
+		// Déplacement correct : on retourne 1
 		return (c_apres.x - c_avant.x == -valeurMove && c_apres.y - c_avant.y == valeurMove) ||
 			   (c_apres.x - c_avant.x == valeurMove && c_apres.y - c_avant.y == valeurMove);
 	}
@@ -312,7 +315,7 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 
 int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken){
 	int valeurMove = isDiagonal(c_avant, c_apres);
-	//Si la dame ne bouge pas en diagonale
+	// Si la dame ne bouge pas en diagonale
 	if(valeurMove == 0){
 		return 0;
 	}
@@ -333,16 +336,16 @@ int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord
 		else{
 			position = (jeu -> board)[c_avant.x - i][c_avant.y - i];
 		}
-		//Si on arrive sur une case d'une piece de la même couleur que nous
+		// Si on arrive sur une case d'une pièce de la même couleur que nous
 		if(position != 0x0 && getColor(position) == getColor((jeu -> board)[c_avant.x][c_avant.y])){
-			//On ne peut pas, on retourne 0
+			// On ne peut pas, on retourne 0
 			return 0;
 		}
-		//Sinon, si on n'est pas sur une case vide et donc qu'on passe au-dessus d'une ennemi
+		// Sinon, si on n'est pas sur une case vide et donc qu'on passe au-dessus d'une ennemi
 		else if(position != 0x0){
-			//Si on ne l'a jamais fait
+			// Si on ne l'a jamais fait
 			if(prise == 0){
-				//On dit qu'on a pris un pion
+				// On dit qu'on a pris une pièce
 				if(diagonale == SUDEST){	
 					position = (jeu -> board)[c_avant.x + i][c_avant.y + i];
 					taken -> x = c_avant.x + i;
@@ -368,15 +371,17 @@ int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord
 					prise = 1;
 				}
 			}
-			//Si on l'a déjà fait lors de la même séquence
+			// Si on l'a déjà fait lors de la même séquence
 			else{
-				//On n'a pas le droit de le faire, on retourne donc 0
+				// On n'a pas le droit de le faire, on retourne donc 0
 				return 0;
 			}
 		}
 	}
+	// Si on a passé tous les tests (avec prise), la séquence est valide, on retourne 2
 	if(prise == 1) return 2;
-	return 1; //Si on a passé tous les test, la séquence est valide, on retourne 1
+	// Si on a passé tous les tests (sans prise), la séquence est valide, on retourne 1
+	return 1;
 }
 
 int isMoveValid(const struct game *jeu, struct coord c_avant, struct coord c_apres, int piece, struct coord *taken){
