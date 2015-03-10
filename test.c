@@ -226,29 +226,29 @@ void test_apply_moves(){
 	free_game(jeu_1);
 	
 	// Tests d'une fin de partie :
-	struct game *jeu_2 = new_game(10, 10);
 	int i;
 	int j;
+	int tab[10][10];
 	// On créé un jeu spécial, avec une ligne de dames blanches, et une ligne de pions noirs
 	for(i = 0 ; i < 10 ; i++){
 		for(j = 0 ; j < 10 ; j++){
 			if( ( (j % 2 == 0) && (i % 2 == 0) ) || ( (j % 2 != 0) && (i % 2 != 0) ) ){
-				(jeu_2 -> board)[i][j] = 0x0;
+				tab[i][j] = 0x0;
 			}
 			else{
 				if(i==4 && j==7){
-					*(*((jeu_2 -> board) + i) + j) = 0x5;
+					tab[i][j] = 0x5;
 				} else if (i==5 && j==6){
-					*(*((jeu_2 -> board) + i) + j) = 0x1;
+					tab[i][j] = 0x1;
 				} else {
-					*(*((jeu_2 -> board) + i) + j) = 0x0;
+					tab[i][j] = 0x0;
 				}
 			}
 		}
 	}
-	
-	nPieces[0] = 1;
-	nPieces[1] = 1;
+
+	struct game *jeu_2 = load_game(10, 10, (const int **) tab, PLAYER_WHITE);
+	//printf("hey\n");
 	
 	struct move *m6 = (struct move *) malloc(sizeof(struct move));
 	if(m6 == NULL){
@@ -280,8 +280,6 @@ void test_apply_moves(){
 	free(m6);
 	free(seq6);
 	free_game(jeu_2);
-	nPieces[0] = 1;
-	nPieces[1] = 1;
 }
 
 // Test de la fonction is_move_seq_valid
