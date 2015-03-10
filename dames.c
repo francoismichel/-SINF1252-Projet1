@@ -92,6 +92,12 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
 	for(i = 0 ; i < xsize ; i++){
 		for(j = 0 ; j < ysize ; j++){
 			(jeu->board)[i][j] = *(*((board) + i) + j);
+			if(getColor((jeu->board)[i][j]) == PLAYER_BLACK){
+				nPieces[PLAYER_BLACK]++;
+			}
+			else if(getColor((jeu->board)[i][j]) == PLAYER_WHITE){
+				nPieces[PLAYER_WHITE]++;
+			}
 		}
 	}
 	
