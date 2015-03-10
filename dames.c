@@ -408,7 +408,6 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
 	
 	//On récupère le 3eme bit de la pièce qui joue et on le compare au joueur qui doit jouer
 	if(getColor(pieceQuiJoue) != game -> cur_player){
-		printf("%d\n",pieceQuiJoue);
 		return 0;
 	}
 	
@@ -421,7 +420,7 @@ int is_move_seq_valid(const struct game *game, const struct move_seq *seq, const
 
 void push_seq(struct game *jeu, const struct move_seq *seq, struct coord *piece_taken, int old_orig, int piece_value){
 	if(seq == NULL){
-		printf("aucune sequence a rajouter dans push_seq\n");
+		printf("Aucune sequence a rajouter dans push_seq\n");
 		return;
 	}
 	if(jeu == NULL){
@@ -517,11 +516,15 @@ int apply_moves(struct game *game, const struct move *moves){
 			isValid = is_move_seq_valid(game, sequence, previousSeq, taken);
 			// Si la séquence n'est pas valide, le move n'est pas valide
 			if(isValid == 0){
-				undo_moves(game, 1);
+				// On annule alors tout ce qu'on a appliqué jusqu'ici et on stocke le résultat de undo_moves
+				int res = undo_moves(game, 1);
+				// On re-inverse la couleur du joueur actuel si undo_moves l'a inversé (si res != -1)
+				if(res != -1){
+					game -> cur_player = ~(game -> cur_player) & 1;
+				}
 				return -1;
 			}
 			else if(isValid == 1){
-				printf("Flag5\n");
 				c_avant = sequence -> c_old;
 				c_apres = sequence -> c_new;
 				playerPiece = (game -> board)[c_avant.x][c_avant.y];
@@ -530,14 +533,12 @@ int apply_moves(struct game *game, const struct move *moves){
 				(game -> board)[c_avant.x][c_avant.y] = 0x0;
 			}
 			else{
-				printf("Flag6\n");
 				c_avant = sequence -> c_old;
 				c_apres = sequence -> c_new;
 				playerPiece = (game -> board)[c_avant.x][c_avant.y];
 				(game -> board)[c_apres.x][c_apres.y] = playerPiece;
 				(game -> board)[c_avant.x][c_avant.y] = 0x0;
 				ennemy = (game -> board)[taken -> x][taken -> y];
-				printf("hey3 : %d, %d\n", taken -> x, taken -> y);
 				(game -> board)[taken -> x][taken -> y] = 0x0;
 				nPieces[getColor(ennemy)]--;
 				if(nPieces[getColor(ennemy)] == 0){
@@ -545,12 +546,12 @@ int apply_moves(struct game *game, const struct move *moves){
 				}
 			}
 			push_seq(game, sequence, taken, playerPiece, ennemy);
-			printf("push : %d\n", playerPiece);
 			//Si le joueur adverse n'a plus de mouvement possible
 			previousSeq = sequence;
 			// On récupère une dame si nécessaire et on récupère le résultat
 			gotDame = transformDame(game, c_apres);
 			sequence = sequence -> next;
+			previousValid = isValid;
 		}
 		// Créer une fonction pour voir si le joueur peut encore jouer apres ou non (moves encore possibles,...)
 		current = current -> next;
@@ -571,7 +572,6 @@ int undo_seq(struct game *jeu, struct move_seq *sequence){
 	if(sequence == NULL || jeu == NULL){
 		return -1;
 	}
-	printf("piece : %d\n", sequence -> old_orig);
 	(jeu -> board)[(sequence -> c_old).x][(sequence -> c_old).y] = sequence -> old_orig;
 	(jeu -> board)[(sequence -> c_new).x][(sequence -> c_new).y] = 0x0;
 	if(sequence -> piece_value != 0x0){
@@ -593,7 +593,6 @@ int undo_moves(struct game *game, int n){
 	struct move_seq *current;
 	for(i = 0 ; i < n && mouvement != NULL ; i++){
 		mouvement = pop_move(game);
-		printf("%d\n",i);
 		current = mouvement -> seq;
 		if(current == NULL){
 			free(mouvement);
