@@ -564,7 +564,8 @@ int apply_moves(struct game *game, const struct move *moves){
 		game -> cur_player = ~(game -> cur_player) & 1;
 		// Peut-il encore jouer ?
 		if(!canPlay(game, game -> cur_player)){
-			//On retourne 1 pour dire qu'il a perdu
+			game -> cur_player = ~(game -> cur_player) & 1;
+			// On retourne 1 pour dire qu'il a perdu
 			return 1;
 		}
 	}

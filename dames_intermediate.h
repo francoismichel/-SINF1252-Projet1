@@ -70,20 +70,21 @@ int isDiagonal(struct coord c_avant, struct coord c_apres);
 
 /*
  * Retourne 1 si le déplacement du pion de @c_avant à @c_apres est correct.
- * Retourne 0 sinon !!!!!
+ * Retourne 2 si le pion a bien capturé une pièce (dont les coordonnées sont enregistrées dans @taken)
+ * Retourne 0 sinon
  */
 int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken);
 
 /*
  * Retourne 1 si le déplacement de la dame de @c_avant à @c_apres est correct (déplacement simple)
- * Retourne 2 si le déplacement de la dame de @c_avant à @c_apres est correct (prise de pièce)
+ * Retourne 2 si la dame a bien capturé une pièce (dont les coordonnées sont enregistrées dans @taken)
  * Retourne 0 sinon (déplacement incorrect)
  */
 int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken);
 
 /*
  * Retourne 1 si le déplacement de la @piece de @c_avant à @c_apres est correct (déplacement simple)
- * Retourne 2 si le déplacement de la @piece de @c_avant à @c_apres est correct (prise de pièce)
+ * Retourne 2 si la @piece a capturé une pièce (dont les coordonnées sont enregistrées dans @taken)
  * Retourne 0 sinon (déplacement incorrect)
  */
 int isMoveValid(const struct game *jeu, struct coord c_avant, struct coord c_apres, int piece, struct coord *taken);

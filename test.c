@@ -224,6 +224,64 @@ void test_apply_moves(){
 	free(seq4);
 	free(seq5);
 	free_game(jeu_1);
+	
+	// Tests d'une fin de partie :
+	struct game *jeu_2 = new_game(10, 10);
+	int i;
+	int j;
+	// On créé un jeu spécial, avec une ligne de dames blanches, et une ligne de pions noirs
+	for(i = 0 ; i < 10 ; i++){
+		for(j = 0 ; j < 10 ; j++){
+			if( ( (j % 2 == 0) && (i % 2 == 0) ) || ( (j % 2 != 0) && (i % 2 != 0) ) ){
+				(jeu_2 -> board)[i][j] = 0x0;
+			}
+			else{
+				if(i==4 && j==7){
+					*(*((jeu_2 -> board) + i) + j) = 0x5;
+				} else if (i==5 && j==6){
+					*(*((jeu_2 -> board) + i) + j) = 0x1;
+				} else {
+					*(*((jeu_2 -> board) + i) + j) = 0x0;
+				}
+			}
+		}
+	}
+	
+	nPieces[0] = 1;
+	nPieces[1] = 1;
+	
+	struct move *m6 = (struct move *) malloc(sizeof(struct move));
+	if(m6 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	m6->next = NULL;
+	struct move_seq *seq6 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq6 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	struct coord old_6 = {4,7};
+	struct coord new_6 = {6,5};
+	struct coord piece_taken_6 = {5,6};
+	seq6->next = NULL;
+	seq6->c_old = old_6;
+	seq6->c_new = new_6;
+	seq6->piece_value = 0x1;
+	seq6->piece_taken = piece_taken_6;
+	seq6->old_orig = 0x5;
+	m6->seq = seq6;
+	
+	int check_move_6 = apply_moves(jeu_2, m6);
+	CU_ASSERT_EQUAL(check_move_6, 1);
+	CU_ASSERT_EQUAL(jeu_2->cur_player, PLAYER_WHITE);
+	
+	free(m6);
+	free(seq6);
+	free_game(jeu_2);
+	nPieces[0] = 1;
+	nPieces[1] = 1;
 }
 
 // Test de la fonction is_move_seq_valid

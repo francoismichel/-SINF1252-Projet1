@@ -169,7 +169,7 @@ void test_pieceBienPrise(){
 		printf("Erreur d'allocation de mémoire\n");
 		exit(EXIT_FAILURE);
 	}
-	print_board(jeu_1);
+	
 	struct coord old = {5,6};
 	struct coord new = {6,5};
 	seq1->next = NULL;
@@ -550,6 +550,97 @@ void test_isMoveValid(){
 	free_game(jeu_1);
 }
 
+// void push_seq n'est pas testé indépendemment car cette fonction ne renvoie pas de résultat,
+// et est testé implicitement par les autres tests CUnit.
+
+void test_transformDame(){
+	struct game *jeu = new_game(10, 10);
+	int i;
+	int j;
+	// On créé un jeu spécial, avec une ligne de dames blanches, une ligne de pions noirs
+	// Ainsi qu'un pion noir qui devrait être une dame, au bout du plateau
+	for(i = 0 ; i < 10 ; i++){
+		for(j = 0 ; j < 10 ; j++){
+			if( ( (j % 2 == 0) && (i % 2 == 0) ) || ( (j % 2 != 0) && (i % 2 != 0) ) ){
+				(jeu -> board)[i][j] = 0x0;
+			}
+			else{
+				if(j == 8){
+					*(*((jeu -> board) + i) + j) = 0x1;
+				} else if (j < 6 && j > 4){
+					*(*((jeu -> board) + i) + j) = 0x7;
+				} else if (i==6 && j==9){
+					*(*((jeu -> board) + i) + j) = 0x1;
+				} else {
+					*(*((jeu -> board) + i) + j) = 0x0;
+				}
+			}
+		}	
+	}
+	
+	struct coord c = {6,9};
+	CU_ASSERT_EQUAL(transformDame(jeu, c), 1);
+	
+	struct coord c_2 = {9,8};
+	CU_ASSERT_EQUAL(transformDame(jeu, c_2), 0);
+	
+	free_game(jeu);
+}
+
+void test_undo_seq(){
+	struct game *jeu = new_game(10, 10);
+	int i;
+	int j;
+	// On créé un jeu spécial, avec une ligne de dames blanches, et une ligne de pions noirs
+	for(i = 0 ; i < 10 ; i++){
+		for(j = 0 ; j < 10 ; j++){
+			if( ( (j % 2 == 0) && (i % 2 == 0) ) || ( (j % 2 != 0) && (i % 2 != 0) ) ){
+				(jeu -> board)[i][j] = 0x0;
+			}
+			else{
+				if(i==4 && j==7){
+					*(*((jeu -> board) + i) + j) = 0x5;
+				} else if (i==5 && j==6){
+					*(*((jeu -> board) + i) + j) = 0x1;
+				} else {
+					*(*((jeu -> board) + i) + j) = 0x0;
+				}
+			}
+		}	
+	}
+	print_board(jeu);
+	
+	struct move *m1 = (struct move *) malloc(sizeof(struct move));
+	if(m1 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	m1->next = NULL;
+	struct move_seq *seq1 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq1 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	struct coord old = {4,7};
+	struct coord new = {6,5};
+	struct coord piece_taken = {5,6};
+	seq1->next = NULL;
+	seq1->c_old = old;
+	seq1->c_new = new;
+	seq1->piece_value = 0x1;
+	seq1->piece_taken = piece_taken;
+	seq1->old_orig = 0x5;
+	m1->seq = seq1;
+	
+	int check_move = apply_moves(jeu, m1);
+	CU_ASSERT_EQUAL(check_move, 1);
+	
+	free(m1);
+	free(seq1);
+	free_game(jeu);
+}
+
 int main(int argc, char *argv[]){
 	
 	// Notre suite de tests
@@ -578,7 +669,9 @@ int main(int argc, char *argv[]){
 		(NULL == CU_add_test(pSuite, "test de test_isDiagonal()", test_isDiagonal)) ||
 		(NULL == CU_add_test(pSuite, "test de test_isCorrectMovePion()", test_isCorrectMovePion)) ||
 		(NULL == CU_add_test(pSuite, "test de test_isCorrectMoveDame()", test_isCorrectMoveDame)) ||
-		(NULL == CU_add_test(pSuite, "test de test_isMoveValid()", test_isMoveValid))){
+		(NULL == CU_add_test(pSuite, "test de test_isMoveValid()", test_isMoveValid)) ||
+		(NULL == CU_add_test(pSuite, "test de test_transformDame()", test_transformDame)) ||
+		(NULL == CU_add_test(pSuite, "test de test_undo_seq()", test_undo_seq))){
 		
 		CU_cleanup_registry();
 		return CU_get_error();
