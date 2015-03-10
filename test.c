@@ -1253,6 +1253,7 @@ int main(int argc, char *argv[]){
 		(NULL == CU_add_test(pSuite, "test de test_apply_moves()", test_apply_moves)) ||
 		(NULL == CU_add_test(pSuite, "test de test_is_move_seq_valid()", test_is_move_seq_valid)) ||
 		(NULL == CU_add_test(pSuite, "test de test_undo_moves()", test_undo_moves)) ||
+		(NULL == CU_add_test(pSuite, "test de test_undo_moves()", test_partie)) ||
 		(NULL == CU_add_test(pSuite, "test de test_print_board()", test_print_board))){
 		
 		CU_cleanup_registry();
