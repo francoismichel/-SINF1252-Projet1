@@ -96,12 +96,7 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
 	}
 	
 	jeu -> cur_player = cur_player;
-	jeu -> moves = (struct move *) malloc(sizeof(struct move));
 	jeu -> moves = NULL;
-	if(&(jeu->moves) == NULL){  // Si le malloc a échoué
-		printf("Erreur d'allocation de mémoire.\n");
-		exit(EXIT_FAILURE);
-	}
 	return jeu;										  
 }
 
@@ -342,7 +337,7 @@ int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord
 			return 0;
 		}
 		// Sinon, si on n'est pas sur une case vide et donc qu'on passe au-dessus d'une ennemi
-		else if(position != 0x0){
+		else if(position != 0x0 && i != valeurMove){
 			// Si on ne l'a jamais fait
 			if(prise == 0){
 				// On dit qu'on a pris une pièce
@@ -378,6 +373,8 @@ int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord
 			}
 		}
 	}
+	// Si on atterit sur une case non vide au final, erreur
+	if(position != 0x0) return 0;
 	// Si on a passé tous les tests (avec prise), la séquence est valide, on retourne 2
 	if(prise == 1) return 2;
 	// Si on a passé tous les tests (sans prise), la séquence est valide, on retourne 1
@@ -599,6 +596,7 @@ int undo_moves(struct game *game, int n){
 		printf("%d\n",i);
 		current = mouvement -> seq;
 		if(current == NULL){
+			free(mouvement);
 			return -1;
 		}
 		while(current != NULL){
@@ -678,5 +676,6 @@ void free_game(struct game *game){
 		free(precedent);
 		precedent = game -> moves;
 	}
+	free(game->board);
 	free(game);
 }

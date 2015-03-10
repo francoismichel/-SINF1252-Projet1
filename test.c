@@ -21,6 +21,8 @@ void test_new_game(){
 		}
 	}
 	CU_ASSERT_EQUAL(jeu->cur_player, 1);
+	
+	free_game(jeu);
 }
 
 // Test de la fonction load_game
@@ -49,13 +51,9 @@ void test_load_game(){
 	CU_ASSERT_EQUAL(m1_check, 0);
 	
 	// Un double pointeur non constant ne peut pas être utilisé en tant qu'argument constant
-	const int **plateau = (const int **) malloc(10*sizeof(int *));
-	if(plateau == NULL){
-		printf("Erreur d'allocation de mémoire\n");
-		exit(EXIT_FAILURE);
-	}
-	
+	const int **plateau;
 	plateau = (const int**) jeu_1->board;
+	
 	struct game *jeu_2 = load_game(10, 10, plateau, jeu_1->cur_player);
 	CU_ASSERT_PTR_NOT_NULL(jeu_2);
 	
@@ -67,7 +65,8 @@ void test_load_game(){
 	
 	struct game *jeu_5 = load_game(10, 10, plateau, 2);
 	CU_ASSERT_PTR_NULL(jeu_5);
-	
+	free(m1);
+	free(seq1);
 	free_game(jeu_1);
 	free_game(jeu_2);
 	// Pas de free_game(jeu_3), celui-ci vaut NULL
@@ -214,6 +213,16 @@ void test_apply_moves(){
 	int m5_check = apply_moves(jeu_1, m5);
 	CU_ASSERT_EQUAL(m5_check, -1);
 	
+	free(m1);
+	free(m2);
+	free(m3);
+	free(m4);
+	free(m5);
+	free(seq1);
+	free(seq2);
+	free(seq3);
+	free(seq4);
+	free(seq5);
 	free_game(jeu_1);
 }
 
@@ -382,6 +391,14 @@ void test_undo_moves(){
 	int check_undo_3 = undo_moves(jeu_1, 0);
 	CU_ASSERT_EQUAL(check_undo_3, -1);
 	
+	free(m1);
+	free(m2);
+	free(m3);
+	free(m4);
+	free(seq1);
+	free(seq2);
+	free(seq3);
+	free(seq4);
 	free_game(jeu_1);
 }
 
@@ -394,6 +411,7 @@ void test_print_board(){
 	// print_board(NULL);
 	// CU_PASS("Message d'erreur imprimé");
 	
+	free_game(jeu_1);
 }
 
 int main(int argc, char *argv[]){
