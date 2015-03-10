@@ -1,6 +1,6 @@
-all: programme test test_intermediate
+all: jeu test test_intermediate
 
-programme: dames.c dames.h programme.c
+jeu: dames.c dames.h programme.c
 	gcc -c dames.c -Wall -Werror -g
 	gcc -o programme programme.c dames.o -Wall -Werror -g
 	

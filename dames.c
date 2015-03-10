@@ -508,9 +508,12 @@ int apply_moves(struct game *game, const struct move *moves){
 		// On parcourt la liste de séquences du move
 		while(sequence != NULL){
 			if(previousValid == 1 || gotDame == 1){
-				struct move *mv = pop_move(game);
-				free_move_seq(mv -> seq);
-				free(mv);
+				// On annule alors tout ce qu'on a appliqué jusqu'ici et on stocke le résultat de undo_moves
+				int res = undo_moves(game, 1);
+				// On re-inverse la couleur du joueur actuel si undo_moves l'a inversé (si res != -1)
+				if(res != -1){
+					game -> cur_player = ~(game -> cur_player) & 1;
+				}
 				return -1;
 			}
 			isValid = is_move_seq_valid(game, sequence, previousSeq, taken);
