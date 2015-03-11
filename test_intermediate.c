@@ -688,6 +688,10 @@ void test_Pions(){
 	CU_ASSERT_EQUAL(nPieces[0], 3);
 	CU_ASSERT_EQUAL(nPieces[1], 3);
 	
+	for(i = 0 ; i < 10 ; i++){
+		free(*(tab + i));
+	}
+	free(tab);
 	free(m6);
 	free(seq6);
 	free_game(jeu_2);

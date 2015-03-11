@@ -229,7 +229,7 @@ void test_apply_moves(){
 	int i;
 	int j;
 	int **tab = (int **) malloc(10*sizeof(int *));
-	// On créé un jeu spécial, avec une ligne de dames blanches, et une ligne de pions noirs
+	// On créé un jeu spécial, avec deux pions restant
 	for(i = 0 ; i < 10 ; i++){
 		tab[i] = (int *) malloc(10*sizeof(int));
 		for(j = 0 ; j < 10 ; j++){
@@ -277,13 +277,17 @@ void test_apply_moves(){
 	CU_ASSERT_EQUAL(check_move_6, 1);
 	CU_ASSERT_EQUAL(jeu_2->cur_player, PLAYER_WHITE);
 	
+	for(i = 0 ; i < 10 ; i++){
+		free(*(tab + i));
+	}
+	free(tab);
 	free(m6);
 	free(seq6);
 	free_game(jeu_2);
 	
 	// Test d'égalité en fin de partie
 	int **tab_2 = (int **) malloc(10*sizeof(int *));
-	// On créé un jeu spécial, avec une ligne de dames blanches, et une ligne de pions noirs
+	// On créé un jeu spécial, qui va finir par coincer le seul pion blanc restant
 	for(i = 0 ; i < 10 ; i++){
 		tab_2[i] = (int *) malloc(10*sizeof(int));
 		for(j = 0 ; j < 10 ; j++){
@@ -292,17 +296,19 @@ void test_apply_moves(){
 			}
 			else{
 				if(i==0 && j==1){
-					tab_2[i][j] = 0x5;
-				} else if (i==1 && j==0){
 					tab_2[i][j] = 0x1;
+				} else if (i==1 && j==4){
+					tab_2[i][j] = 0x5;
 				} else {
 					tab_2[i][j] = 0x0;
 				}
 			}
 		}
 	}
+	tab_2[3][0] = 0x1;
+	tab_2[2][1] = 0x1;
 
-	struct game *jeu_3 = load_game(10, 10, (const int **) tab, PLAYER_WHITE);
+	struct game *jeu_3 = load_game(10, 10, (const int **) tab_2, PLAYER_WHITE);
 	
 	struct move *m7 = (struct move *) malloc(sizeof(struct move));
 	if(m7 == NULL){
@@ -310,25 +316,53 @@ void test_apply_moves(){
 		exit(EXIT_FAILURE);
 	}
 	m7->next = NULL;
+	struct move *m8 = (struct move *) malloc(sizeof(struct move));
+	if(m8 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
+	m8->next = NULL;
 	struct move_seq *seq7 = (struct move_seq*) malloc(sizeof(struct move_seq));
 	if(seq7 == NULL){
 		printf("Erreur d'allocation de mémoire\n");
 		exit(EXIT_FAILURE);
 	}
+	struct move_seq *seq8 = (struct move_seq*) malloc(sizeof(struct move_seq));
+	if(seq8 == NULL){
+		printf("Erreur d'allocation de mémoire\n");
+		exit(EXIT_FAILURE);
+	}
 	
-	struct coord old_7 = {0,1};
-	struct coord new_7 = {1,0};
+	struct coord old_7 = {1,4};
+	struct coord new_7 = {0,3};
 	seq7->next = NULL;
 	seq7->c_old = old_7;
 	seq7->c_new = new_7;
 	m7->seq = seq7;
 	
 	int check_move_7 = apply_moves(jeu_3, m7);
-	CU_ASSERT_EQUAL(check_move_7, 1);
+	CU_ASSERT_EQUAL(check_move_7, 0);
+	
+	struct coord old_8 = {0,1};
+	struct coord new_8 = {1,2};
+	seq8->next = NULL;
+	seq8->c_old = old_8;
+	seq8->c_new = new_8;
+	m8->seq = seq8;
+	
+	int check_move_8 = apply_moves(jeu_3, m8);
+	CU_ASSERT_EQUAL(check_move_8, 1);
+	
 	CU_ASSERT_EQUAL(jeu_2->cur_player, PLAYER_BLACK);
 	
+	for(i = 0 ; i < 10 ; i++){
+		free(*(tab_2 + i));
+	}
+	free(tab_2);
 	free(m7);
+	free(m8);
 	free(seq7);
+	free(seq8);
 	free_game(jeu_3);
 }
 
@@ -1266,6 +1300,7 @@ void test_partie(){
 	free(m7);
 	free(m8);
 	free(m9);
+	free(m10);
 	free(m11);
 	free(m12);
 	free(m13);
@@ -1282,6 +1317,7 @@ void test_partie(){
 	free(m24);
 	free(m25);
 	free(m26);
+	free(m265);
 	free(m27);
 	free(m28);
 	free(m29);
@@ -1316,6 +1352,7 @@ void test_partie(){
 	free(seq24);
 	free(seq25);
 	free(seq26);
+	free(seq265);
 	free(seq27);
 	free(seq28);
 	free(seq29);

@@ -54,7 +54,7 @@ $ ./test_intermediate
 Auteurs
 ----
 
-DESCAMPS Robin, MICHEL François [SINF12BA]
+Anonyme
 
 **11/03/2015**
 
