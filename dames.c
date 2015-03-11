@@ -94,6 +94,12 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
 	// On recopie le tableau passé en arguments pour le mettre dans le tableau du jeu
 	for(i = 0 ; i < xsize ; i++){
 		for(j = 0 ; j < ysize ; j++){
+			if( *(*((board) + i) + j) != 0x0 && *(*((board) + i) + j) != 0x1 && *(*((board) + i) + j) != 0x5 
+				&& *(*((board) + i) + j) != 0x3 && *(*((board) + i) + j) != 0x7){
+				printf("Le tableau passé en argument est incorrect...\n");
+				return NULL;
+			}
+				
 			(jeu->board)[i][j] = *(*((board) + i) + j);
 			// On incrémente les variables globales de compteurs de pions quand nécessaire
 			if(getColor((jeu->board)[i][j]) == PLAYER_BLACK){
