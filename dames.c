@@ -102,7 +102,6 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
 			}
 			
 		}
-			printf("hey1\n");
 	}
 	
 	jeu -> cur_player = cur_player;
