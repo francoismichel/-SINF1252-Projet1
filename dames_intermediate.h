@@ -3,6 +3,7 @@
 #define SUDOUEST 3
 #define SUDEST 4
 
+// Variable qui sert à l'exécution de l'interface, mais qui n'a pas de réelle influence sur le jeu
 int nPieces[2];
 
 /*

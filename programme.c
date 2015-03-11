@@ -127,7 +127,7 @@ int isCorrectInput(char *input){
 			// (excepté à l'endroit de x et y)
             if(input[j] != chaine[i] && i != 1 && i != 10 && i != 3 && i != 12){
 				// Il y a une erreur, on l'affiche
-				printf("erreur de caractère : %c\n", input[j]);
+				printf("Erreur de caractère : %c\n", input[j]);
 				// On le fait remarquer en retournant -1
                 return -1;
             }
@@ -186,7 +186,7 @@ int getSequence(char *chaine){
     fgets(chaine, 100, stdin);	//On récupère l'input avec une taille limite de 100
 	int n = isCorrectInput(chaine);	//On récupère la valeur renvoyée par la fonction isCorrectInput
     while(n == -1){					//Tant que l'input rentré est incorrect
-        printf("\nVous n'avez pas entré une commande valide...\n");
+        printf("Vous n'avez pas entré une commande valide...\n");
         return getSequence(chaine);
     }
 	return n;
@@ -233,12 +233,12 @@ int main(int argc, char *argv[]){
 					printf("\nLes noirs ont gagné !\n");
 				}
 				else{								
-					printf("\nJoueur gagnant indéterminé !\n");
+					printf("\nJoueur gagnant indéterminé...\n");
 				}
 			}
 			// Si le mouvement n'a pas pu être appliqué
 			else if(apply == -1){
-				printf("\nImpossible d'appliquer ce mouvement : mouvement invalide.\n");
+				printf("Impossible d'appliquer ce mouvement : mouvement invalide.\n");
 			}
 		}
 		// Si l'action à effectuer est un undo
@@ -247,7 +247,7 @@ int main(int argc, char *argv[]){
 			undo = undo_moves(jeu, n);
 			// Si undo s'est mal passée
 			if(undo != 0){
-				printf("\nImpossible d'annuler ces mouvements...\n");
+				printf("Impossible d'annuler ces mouvements...\n");
 				undo = 0;
 			}
 		}
