@@ -89,6 +89,8 @@ struct game *load_game(int xsize, int ysize, const int **board, int cur_player){
 			exit(EXIT_FAILURE);
 		}
 	}
+	nPieces[PLAYER_WHITE] = 0;
+	nPieces[PLAYER_BLACK] = 0;
 	// On recopie le tableau passé en arguments pour le mettre dans le tableau du jeu
 	for(i = 0 ; i < xsize ; i++){
 		for(j = 0 ; j < ysize ; j++){
@@ -216,6 +218,7 @@ int canPlay(const struct game *jeu, int color){
 }
 
 int getDiagonal(struct coord c_avant, struct coord c_apres){
+	//On regarde si les coordonnées forment une diagonale ou non
 	if(c_apres.x - c_avant.x > 0 && c_apres.y - c_avant.y > 0){
 		return SUDEST;
 	}
@@ -258,6 +261,7 @@ int isDiagonal(struct coord c_avant, struct coord c_apres){
 }
 
 int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken){
+	// On récupère a valeur de isDiagonal
 	int valeurMove = isDiagonal(c_avant, c_apres);
 	if(valeurMove == 0 || valeurMove > 2){
 		return 0;
@@ -555,9 +559,9 @@ int apply_moves(struct game *game, const struct move *moves){
 				ennemy = (game -> board)[taken -> x][taken -> y];
 				(game -> board)[taken -> x][taken -> y] = 0x0;
 				nPieces[getColor(ennemy)]--;
-				if(nPieces[getColor(ennemy)] == 0){
+				/*if(nPieces[getColor(ennemy)] == 0){
 					return 1;
-				}
+				}*/
 			}
 			push_seq(game, sequence, taken, playerPiece, ennemy);
 			//Si le joueur adverse n'a plus de mouvement possible
