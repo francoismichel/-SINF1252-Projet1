@@ -27,9 +27,9 @@ Vous pouvez exécuter le jeu à l'aide de la commande :
 $ ./programme
 ```
 Pour exécuter des mouvements sur le jeu, la syntaxe est la suivante (respectivement pour une séquence et pour plusieurs séquences) :
-> (x1, y1) to (x2, y2)
+> (x1,y1) to (x2,y2)
 
-> (x1, y1) to (x2, y2) , (x2, y2) to (x3, y3) , ...
+> (x1,y1) to (x2,y2) , (x2,y2) to (x3,y3) , ...
 
 Les joueurs jouent chacun à son tour ; les blancs commencent. Exemple de début de partie :
 ```sh

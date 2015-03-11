@@ -353,7 +353,7 @@ void test_apply_moves(){
 	int check_move_8 = apply_moves(jeu_3, m8);
 	CU_ASSERT_EQUAL(check_move_8, 1);
 	
-	CU_ASSERT_EQUAL(jeu_2->cur_player, PLAYER_BLACK);
+	CU_ASSERT_EQUAL(jeu_3->cur_player, PLAYER_BLACK);
 	
 	for(i = 0 ; i < 10 ; i++){
 		free(*(tab_2 + i));
