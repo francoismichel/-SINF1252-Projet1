@@ -263,14 +263,17 @@ int isDiagonal(struct coord c_avant, struct coord c_apres){
 int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken){
 	// On récupère a valeur de isDiagonal
 	int valeurMove = isDiagonal(c_avant, c_apres);
+	//Si on bouge de 0 ou de + de 2 cases, c'est une erreur
 	if(valeurMove == 0 || valeurMove > 2){
 		return 0;
 	}
 	// Donc ici, on sait que ValeurMove vaut 1 ou 2 (prise de pion ou non)
-	
+	// Si valeurMove vaut 2 (mouvement de 2 cases), c'est qu'il doit y avoir prise de pion
 	if(valeurMove == 2){
 		int piecePrise;
+		// On récupère l'orientation du mouvement
 		int diagonale = getDiagonal(c_avant, c_apres);
+		// On vérifie en fonction de la direction du mouvement
 		if(diagonale == SUDEST){
 			piecePrise = (jeu -> board)[c_avant.x + 1][c_avant.y + 1];
 			// Vérifions que la pièce prise n'est ni une case vide, ni un pion de sa propre couleur
@@ -304,9 +307,11 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 			taken -> x = c_avant.x - 1;
 			taken -> y = c_avant.y - 1;
 		}
-		// Déplacement valide avec capture de pièce
+		// Déplacement valide avec capture de pièce : on retourne 2
 		return 2;
 	}
+	// Si on est ici, c'est que valeurMove vaut 1
+	// On recupere la valeur de la piece qui joue
 	int piece = (jeu -> board)[c_avant.x][c_avant.y];
 	
 	// Si la pièce est un pion blanc, on regarde si son mouvement est correct (mouvement en diagonale)
@@ -324,11 +329,13 @@ int isCorrectMovePion(const struct game *jeu, struct coord c_avant, struct coord
 }
 
 int isCorrectMoveDame(const struct game *jeu, struct coord c_avant, struct coord c_apres, struct coord *taken){
+	// On récupère la valeur de isDiagonal (nombre de cases qu'on parcourt)
 	int valeurMove = isDiagonal(c_avant, c_apres);
 	// Si la dame ne bouge pas en diagonale
 	if(valeurMove == 0){
 		return 0;
 	}
+	// On récupère la direction du mouvement
 	int diagonale = getDiagonal(c_avant, c_apres);
 	int prise = 0;
 	int i;
@@ -460,12 +467,16 @@ void push_seq(struct game *jeu, const struct move_seq *seq, struct coord *piece_
 }
 
 int transformDame(struct game *jeu, struct coord c){
+	// On récupère la valeur de la pièce
 	int piece = (jeu -> board)[c.x][c.y];
+	// Si ce n'est pas une dame
 	if(!isDame(piece)){
+		// Si le pion est blanc et qu'il est en haut du plateau
 		if(getColor(piece) == PLAYER_WHITE && c.y == 0){
 			(jeu -> board)[c.x][c.y] = (jeu -> board)[c.x][c.y] | 0x2;
 			return 1;
 		}
+		// Si le pion est noir et qu'il est en bas du plateau
 		else if(getColor(piece) == PLAYER_BLACK && c.y == 9){
 			(jeu -> board)[c.x][c.y] = (jeu -> board)[c.x][c.y] | 0x2;
 			return 1;
@@ -542,26 +553,34 @@ int apply_moves(struct game *game, const struct move *moves){
 				}
 				return -1;
 			}
+			// S'il n'y a pas de capture
 			else if(isValid == 1){
 				c_avant = sequence -> c_old;
 				c_apres = sequence -> c_new;
+				// On récupère la pièce
 				playerPiece = (game -> board)[c_avant.x][c_avant.y];
+				// On met ennemy à 0
 				ennemy = 0x0;
+				// On fait avancer la piece
 				(game -> board)[c_apres.x][c_apres.y] = (game -> board)[c_avant.x][c_avant.y];
+				// On vide la case ou était la pièce
 				(game -> board)[c_avant.x][c_avant.y] = 0x0;
 			}
+			// S'il y a capture de pièce
 			else{
 				c_avant = sequence -> c_old;
 				c_apres = sequence -> c_new;
+				// On récupère la valeur de la pièce
 				playerPiece = (game -> board)[c_avant.x][c_avant.y];
+				// On fait avancer la pièce
 				(game -> board)[c_apres.x][c_apres.y] = playerPiece;
 				(game -> board)[c_avant.x][c_avant.y] = 0x0;
+				// On récupère la valeur de la pièce prise
 				ennemy = (game -> board)[taken -> x][taken -> y];
+				// On vide la case de la pièce prise
 				(game -> board)[taken -> x][taken -> y] = 0x0;
+				// On diminue le nombre de pièces de l'adversaire
 				nPieces[getColor(ennemy)]--;
-				/*if(nPieces[getColor(ennemy)] == 0){
-					return 1;
-				}*/
 			}
 			push_seq(game, sequence, taken, playerPiece, ennemy);
 			//Si le joueur adverse n'a plus de mouvement possible
@@ -611,6 +630,7 @@ int undo_moves(struct game *game, int n){
 	}
 	struct move_seq *current;
 	for(i = 0 ; i < n && mouvement != NULL ; i++){
+		// On sort le mouvement de la pile de mouvements
 		mouvement = pop_move(game);
 		current = mouvement -> seq;
 		if(current == NULL){
@@ -643,6 +663,7 @@ void print_board(const struct game *game){
 	for(j = 0 ; j < 10 ; j++){
 		printf("%d ", j);
 		for(i = 0 ; i < 10 ; i++){
+			// On affiche un caractère différent en fonction de la valeur de la case
 			if((game -> board)[i][j] == 0x0){
 				carac = 'X';
 			}
@@ -684,6 +705,7 @@ void free_game(struct game *game){
 		exit(EXIT_FAILURE);
 	}
 	int i;
+	// On libère le tableau de jeu
 	for(i = 0 ; i < 10 ; i++){
 		free(*((game -> board) + i));
 	}
@@ -694,6 +716,8 @@ void free_game(struct game *game){
 		free(precedent);
 		precedent = game -> moves;
 	}
+	// On libère le double pointeur
 	free(game->board);
+	// On libère la structure du jeu
 	free(game);
 }
