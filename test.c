@@ -228,9 +228,10 @@ void test_apply_moves(){
 	// Tests d'une fin de partie :
 	int i;
 	int j;
-	int tab[10][10];
+	int **tab = (int **) malloc(10*sizeof(int *));
 	// On créé un jeu spécial, avec une ligne de dames blanches, et une ligne de pions noirs
 	for(i = 0 ; i < 10 ; i++){
+		tab[i] = (int *) malloc(10*sizeof(int));
 		for(j = 0 ; j < 10 ; j++){
 			if( ( (j % 2 == 0) && (i % 2 == 0) ) || ( (j % 2 != 0) && (i % 2 != 0) ) ){
 				tab[i][j] = 0x0;
@@ -248,7 +249,6 @@ void test_apply_moves(){
 	}
 
 	struct game *jeu_2 = load_game(10, 10, (const int **) tab, PLAYER_WHITE);
-	//printf("hey\n");
 	
 	struct move *m6 = (struct move *) malloc(sizeof(struct move));
 	if(m6 == NULL){
